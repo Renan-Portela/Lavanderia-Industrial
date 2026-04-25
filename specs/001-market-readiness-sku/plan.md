@@ -4,7 +4,7 @@
 **Input**: Feature specification for SKU standardization and market readiness.
 
 ## Summary
-Implement a standardized material catalog with unique SKUs following the `[CAT]-[MAT]-[SIZ]` pattern. This includes architectural refactoring for authentication, automated testing, and local QR code generation. The plan specifically addresses professional PPE (EPI) requirements, distinguishing between dry cleaning (leather/raspa) and water washing (industrial PPE/cloths).
+Implement a standardized material catalog with unique SKUs following the `[CAT]-[MAT]-[SIZ]-[WASH]` pattern. This includes architectural refactoring for authentication, automated testing, and local QR code generation. The plan specifically addresses professional PPE (EPI) requirements, distinguishing between dry cleaning (leather/raspa) and water washing (industrial PPE/cloths).
 
 ## Technical Context
 - **Language/Version**: PHP 7.4+
@@ -57,7 +57,7 @@ database.sql             # Migrations for materials/users tables
 
 ### Phase 0: Research (Complete)
 - Standards for leather/raspa dry cleaning vs industrial water washing.
-- SKU naming strategy: `[CAT]-[MAT]-[SIZ]`.
+- SKU naming strategy: `[CAT]-[MAT]-[SIZ]-[WASH]`.
 - Placement of "Washing Method" as a Material property.
 
 ### Phase 1: Design (Complete)

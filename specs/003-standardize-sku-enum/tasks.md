@@ -11,36 +11,36 @@ Standardize the SKU pattern to `[CAT]-[MAT]-[SIZ]-[WASH]` and the `tipo_lavagem`
 ## Phase 1: Setup
 Initialize the standardization process and documentation alignment.
 
-- [ ] T001 [P] Create backup of current `database.sql` before schema updates
-- [ ] T002 [P] Update `specs/001-market-readiness-sku/spec.md` with unified SKU pattern `[CAT]-[MAT]-[SIZ]-[WASH]`
-- [ ] T003 [P] Update `specs/001-market-readiness-sku/plan.md` to reflect standardized SKU and ENUM patterns
+- [x] T001 [P] Create backup of current `database.sql` before schema updates
+- [x] T002 [P] Update `specs/001-market-readiness-sku/spec.md` with unified SKU pattern `[CAT]-[MAT]-[SIZ]-[WASH]`
+- [x] T003 [P] Update `specs/001-market-readiness-sku/plan.md` to reflect standardized SKU and ENUM patterns
 
 ## Phase 2: Foundational
 Blocking prerequisites for documentation and logic alignment.
 
-- [ ] T004 [P] Update `specs/001-market-readiness-sku/data-model.md` entities (`Material`, `Pedido`) with standardized ENUMs and FKs
-- [ ] T005 [P] Update `specs/001-market-readiness-sku/tasks.md` to include explicit `material_id` FK steps in Phase 2
-- [ ] T006 Update `database.sql` to standardize `tipo_lavagem` ENUM to ('A', 'S') and add `material_id` to `pedidos`
+- [x] T004 [P] Update `specs/001-market-readiness-sku/data-model.md` entities (`Material`, `Pedido`) with standardized ENUMs and FKs
+- [x] T005 [P] Update `specs/001-market-readiness-sku/tasks.md` to include explicit `material_id` FK steps in Phase 2
+- [x] T006 Update `database.sql` to standardize `tipo_lavagem` ENUM to ('A', 'S') and add `material_id` to `pedidos`
 
 ## Phase 3: User Story 1 - Unified Data Pattern (Priority: P1)
 **Goal**: All technical documentation and core logic follow the `[CAT]-[MAT]-[SIZ]-[WASH]` and ('A', 'S') patterns.
 
 ### Implementation
 
-- [ ] T007 [P] [US1] Update SKU generation pattern in `includes/sku_helper.php` to include `[WASH]` suffix
-- [ ] T008 [P] [US1] Update Material management form in `pages/materiais.php` to use 'A' and 'S' options
-- [ ] T009 [US1] Update Material service logic in `includes/material_service.php` to handle standardized ENUM values
-- [ ] T010 [US1] Update Material validation in `tests/MaterialTest.php` to verify the new SKU pattern (excluding legacy items)
-- [ ] T011 [US1] Update Order service in `includes/order_service.php` to utilize `material_id` FK association
+- [x] T007 [P] [US1] Update SKU generation pattern in `includes/sku_helper.php` to include `[WASH]` suffix
+- [x] T008 [P] [US1] Update Material management form in `pages/materiais.php` to use 'A' and 'S' options
+- [x] T009 [US1] Update Material service logic in `includes/material_service.php` to handle standardized ENUM values
+- [x] T010 [US1] Update Material validation in `tests/MaterialTest.php` to verify the new SKU pattern (excluding legacy items)
+- [x] T011 [US1] Update Order service in `includes/order_service.php` to utilize `material_id` FK association
 
 **Checkpoint**: SKU pattern `[CAT]-[MAT]-[SIZ]-A` (or -S) is correctly generated and stored.
 
 ## Final Phase: Polish & Cross-Cutting
 Cleanup and verification.
 
-- [ ] T012 Verify all cross-references between Spec, Plan, and Data Model have 100% terminology alignment
-- [ ] T013 Perform final database integrity check to ensure `pedidos` table correctly links to `materiais`
-- [ ] T014 [P] Update `quickstart.md` in Feature 001 to reflect the standardized migration path
+- [x] T012 Verify all cross-references between Spec, Plan, and Data Model have 100% terminology alignment
+- [x] T013 Perform final database integrity check to ensure `pedidos` table correctly links to `materiais`
+- [x] T014 [P] Update `quickstart.md` in Feature 001 to reflect the standardized migration path
 
 ## Dependencies
 1. Phase 1 & 2 must be completed before Story-specific implementation.

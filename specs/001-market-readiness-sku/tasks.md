@@ -20,6 +20,7 @@ Initialize the project infrastructure and testing harness.
 Blocking prerequisites for all user stories.
 
 - [x] T005 [P] Create `materiais` table with SKU and `tipo_lavagem` fields in `database.sql`
+- [ ] T005.1 [P] Add `material_id` Foreign Key to `pedidos` table in `database.sql`
 - [x] T006 [P] Create `usuarios` table with `password_hash` and `perfil` fields in `database.sql`
 - [x] T007 Implement database connection helper with MySQLi prepared statements in `conexao.php`
 - [x] T008 Implement secure session and authentication helper in `includes/auth_helper.php`

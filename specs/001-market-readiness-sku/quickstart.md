@@ -10,11 +10,11 @@ Execute the migrations in `database.sql` (to be created) which include:
 Populate the `materiais` table with standard PPE items:
 ```sql
 INSERT INTO materiais (nome, sku, tipo_lavagem) VALUES 
-('Luva de Raspa G', 'GLV-RSP-G', 'SECO'),
-('Avental de Raspa', 'APR-RSP-UNI', 'SECO'),
-('Capacete Industrial', 'HLM-PVC-UNI', 'AGUA'),
-('Pano Azul (Indústria)', 'CLO-BLU-UNI', 'AGUA'),
-('Pano Vermelho (Gráfica)', 'CLO-RED-UNI', 'AGUA');
+('Luva de Raspa G', 'GLV-RSP-G-S', 'S'),
+('Avental de Raspa', 'APR-RSP-UNI-S', 'S'),
+('Capacete Industrial', 'HLM-PVC-UNI-A', 'A'),
+('Pano Azul (Indústria)', 'CLO-BLU-UNI-A', 'A'),
+('Pano Vermelho (Gráfica)', 'CLO-RED-UNI-A', 'A');
 ```
 
 ## 3. Configuration

@@ -8,7 +8,7 @@
 ## Clarifications
 
 ### Session 2026-04-24
-- Q: What is the mandatory pattern for SKUs? → A: Hierarchical: `[CAT]-[MAT]-[SIZ]` (e.g., `GLV-IND-XL`).
+- Q: What is the mandatory pattern for SKUs? → A: Hierarchical: `[CAT]-[MAT]-[SIZ]-[WASH]` (e.g., `GLV-IND-XL-A`).
 - Q: Which pages exactly constitute "operational views" requiring authentication? → A: All internal: Everything except `login.php` and potentially `index.php` (Dashboard).
 - Q: What hashing algorithm should be used for user passwords? → A: `password_hash()` with `PASSWORD_DEFAULT` (bcrypt).
 - Q: Which local PHP library should be used for offline QR generation? → A: `chillerlan/php-qrcode`.

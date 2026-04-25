@@ -9,8 +9,8 @@ Represents a unique type of item that can be processed.
 |-------|------|-------------|------------|
 | `id` | INT (PK) | Auto-increment identifier | |
 | `nome` | VARCHAR(255) | Display name (e.g., "Luva de Raspa GG") | Required, Unique |
-| `sku` | VARCHAR(50) | Unique SKU [CAT]-[MAT]-[SIZ] | Required, Unique, Pattern Match |
-| `tipo_lavagem` | ENUM | 'AGUA' or 'SECO' | Required |
+| `sku` | VARCHAR(50) | Unique SKU [CAT]-[MAT]-[SIZ]-[WASH] | Required, Unique, Pattern Match |
+| `tipo_lavagem` | ENUM('A', 'S') | 'A' (Agua) or 'S' (Seco) | Required |
 | `descricao` | TEXT | Optional details | |
 | `data_criacao` | TIMESTAMP | Creation record | |
 
