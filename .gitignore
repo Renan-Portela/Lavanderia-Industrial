@@ -21,6 +21,8 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+.gemini
+.specify
 
 # Composer (se usado)
 vendor/
