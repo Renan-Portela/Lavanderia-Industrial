@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-[specs/001-market-readiness-sku/plan.md](specs/001-market-readiness-sku/plan.md)
+[specs/002-sku-material-tracking/plan.md](specs/001-market-readiness-sku/plan.md)
 <!-- SPECKIT END -->
 
 ## Constitution

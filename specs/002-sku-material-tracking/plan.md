@@ -1,73 +1,68 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: SKU & Material Tracking with QR Code
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `002-sku-material-tracking` | **Date**: 2026-04-25 | **Spec**: [specs/002-sku-material-tracking/spec.md](spec.md)
+**Input**: Feature specification for hybrid SKU selection and free-text material description.
 
 ## Summary
-
-[Extract from feature spec: primary requirement + technical approach from research]
+Implement a hybrid entry system for receiving orders. Operators will select a standardized SKU from the catalog (ensuring category/size/wash pattern consistency) and provide a specific descriptive name for the item (e.g., "Luva Nitrílica Verde"). Digital traceability via QR Code is maintained for the entire workflow.
 
 ## Technical Context
-
-**Language/Version**: PHP 7.4+
-**Primary Dependencies**: Bootstrap 5, MySQLi, GD Extension (QR Server API default)
-**Storage**: MySQL / MariaDB
-**Testing**: Manual functional testing (standard for this project) or as specified in task
-**Target Platform**: Web (Apache/Nginx or PHP built-in server)
-**Project Type**: Structured PHP Web Application
-**Performance Goals**: Responsive UI (<1s load), Instant QR Code generation
-**Constraints**: Mobile-first design for laundry floor operations
-**Scale/Scope**: Industrial laundry operations (thousands of items/month)
+- **Language/Version**: PHP 8.4+
+- **Primary Dependencies**: Bootstrap 5, MySQLi, `chillerlan/php-qrcode` (local QR generation)
+- **Storage**: MySQL / MariaDB
+- **Testing**: PHPUnit for business logic (Order/Material consistency)
+- **Target Platform**: Web (Mobile-responsive for laundry floor)
+- **Project Type**: Structured PHP Web Application
+- **Performance Goals**: Responsive UI, Offline-capable QR generation
+- **Constraints**: Mobile-first design; STRICT process flow (Recebimento → Lavagem → Expedição)
+- **Scale/Scope**: Industrial laundry; Hybrid SKU/Text catalog.
 
 ## Constitution Check
-
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
-
-- [ ] **I. Digital Traceability**: Does this feature maintain or enhance QR Code tracking?
-- [ ] **II. Process Integrity**: Does this follow the Recebimento → Lavagem → Expedição flow?
-- [ ] **III. Structured Simplicity**: Is this implemented in clean, structured PHP without new heavy frameworks?
-- [ ] **IV. Data Fidelity**: Are status changes and quantities accurately logged?
-- [ ] **V. Mobile-Responsive**: Is the UI optimized for tablets/mobile (Bootstrap 5)?
+- [x] **I. Digital Traceability**: Maintains current QR code tracking per order.
+- [x] **II. Process Integrity**: Updates operational pages (Lavagem/Expedicao) to respect the hybrid data model.
+- [x] **III. Structured Simplicity**: Uses existing `MaterialService` and standard PHP patterns.
+- [x] **IV. Data Fidelity**: Enforces mandatory SKU selection + specific description for accurate auditing.
+- [x] **V. Mobile-Responsive**: UI refinements for the hybrid form using Bootstrap 5.
 
 ## Project Structure
 
 ### Documentation (this feature)
-
 ```text
-specs/[###-feature]/
-├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
-└── tasks.md             # Phase 2 output (/speckit.tasks command)
+specs/002-sku-material-tracking/
+├── plan.md              # This file
+├── research.md          # Hybrid entry strategy and data mapping
+├── data-model.md        # Pedido table re-purposing (tipo_material as text field)
+├── quickstart.md        # Setup instructions for hybrid tracking
+└── tasks.md             # Implementation tasks
 ```
 
-### Source Code (repository root)
-
+### Source Code (affected)
 ```text
-assets/
-├── css/                 # Stylesheets (style.css)
-├── js/                  # JavaScript (main.js)
-└── images/              # Media assets
-config/
-└── config.php           # Global settings
 includes/
-├── header.php           # Navbar and metadata
-├── footer.php           # Scripts and closing tags
-└── qrcode_helper.php    # QR logic
+├── material_service.php # Read catalog
+└── order_service.php    # Handle hybrid data validation
 pages/
-└── [feature-page].php   # Main feature logic
-qrcodes/                 # Generated QR images
-conexao.php              # DB connection
-index.php                # Dashboard
-database.sql             # Schema updates
+├── recebimento.php      # Form update (Select + Text)
+├── lavagem.php          # UI update (Display SKU + Name)
+└── expedicao.php        # UI update (Display SKU + Name)
 ```
 
-**Structure Decision**: Standard project layout maintained. New pages added to `pages/`, logic split between `includes/` and `pages/`.
+## Phases
+
+### Phase 0: Research (Complete)
+- Mapping `tipo_material` as the descriptive text field.
+- Validation logic for hybrid mandatory fields.
+
+### Phase 1: Design (Complete)
+- Data model for hybrid Pedido.
+- UI layout for mobile-friendly dual input.
+
+### Phase 2: Implementation Planning (Next)
+- Generate tasks for updating the receiving form.
+- Generate tasks for operational UI data display.
+- Generate tasks for verification tests.
 
 ## Complexity Tracking
-
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
 | [N/A]     | [N/A]      | [N/A]                               |
