@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_helper.php';
+require_once __DIR__ . '/../includes/session_helper.php';
 require_once __DIR__ . '/../conexao.php';
 
 // Inicializar banco de dados (Migrações automáticas se necessário)
@@ -103,3 +104,29 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/pages/') !== false) ? '../' : '';
     </nav>
 
     <div class="container-fluid mt-4">
+        <!-- Feedback Global (Flash Messages) -->
+        <?php 
+        $flash = getFlash();
+        if ($flash): 
+            if ($flash['type'] === 'success'): ?>
+                <!-- Success Toast -->
+                <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+                    <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <?php echo $flash['message']; ?>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                </div>
+            <?php else: ?>
+                <!-- Alert for errors/warnings -->
+                <div class="alert alert-<?php echo $flash['type']; ?> alert-dismissible fade show" role="alert">
+                    <i class="bi <?php echo ($flash['type'] === 'danger' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill'); ?> me-2"></i>
+                    <?php echo $flash['message']; ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>

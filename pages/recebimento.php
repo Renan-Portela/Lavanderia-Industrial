@@ -1,12 +1,11 @@
 <?php
 $pageTitle = "Recebimento";
 require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/session_helper.php';
 require_once __DIR__ . '/../includes/qrcode_helper.php';
 require_once __DIR__ . '/../includes/material_service.php';
 require_once __DIR__ . '/../includes/order_service.php';
 
-$mensagem = '';
-$tipo_mensagem = '';
 $pedido_criado = null;
 
 // Buscar materiais do catálogo
@@ -26,8 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     ];
 
     if (empty($cliente) || !OrderService::validateHybridData($formData) || $quantidade <= 0) {
-        $mensagem = 'Por favor, preencha todos os campos obrigatórios.';
-        $tipo_mensagem = 'danger';
+        setFlash('danger', 'Por favor, preencha todos os campos obrigatórios corretamente.');
     } else {
         // Inserir pedido usando material_id e a descrição específica
         $sql = "INSERT INTO pedidos (cliente, material_id, tipo_material, quantidade, observacao, status) VALUES (?, ?, ?, ?, ?, 'Recebido')";
@@ -49,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt2->close();
             }
             
-            // Buscar pedido criado com join no material
+            // Buscar pedido criado com join no material para exibição imediata
             $sql_buscar = "SELECT p.*, m.nome as material_nome, m.sku as material_sku 
                           FROM pedidos p 
                           LEFT JOIN materiais m ON p.material_id = m.id 
@@ -57,11 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $result = $conn->query($sql_buscar);
             $pedido_criado = $result->fetch_assoc();
             
-            $mensagem = 'Pedido cadastrado com sucesso! QR Code gerado.';
-            $tipo_mensagem = 'success';
+            setFlash('success', 'Pedido #' . $pedido_id . ' cadastrado com sucesso! QR Code gerado.');
         } else {
-            $mensagem = 'Erro ao cadastrar pedido: ' . $conn->error;
-            $tipo_mensagem = 'danger';
+            setFlash('danger', 'Erro ao cadastrar pedido: ' . $conn->error);
         }
         
         $stmt->close();
@@ -77,18 +73,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<?php if ($mensagem): ?>
-<div class="alert alert-<?php echo $tipo_mensagem; ?> alert-dismissible fade show" role="alert">
-    <?php echo htmlspecialchars($mensagem); ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
-<?php endif; ?>
-
 <?php if ($pedido_criado): ?>
 <!-- Exibir QR Code após criação -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card border-success">
+        <div class="card border-success shadow-sm">
             <div class="card-header bg-success text-white">
                 <i class="bi bi-check-circle"></i> Pedido Cadastrado com Sucesso!
             </div>
@@ -126,16 +115,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </tr>
                         </table>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 text-center">
                         <div class="qr-code-container">
                             <h5>QR Code do Pedido</h5>
                             <?php if ($pedido_criado['codigo_qr']): ?>
-                                <img src="<?php echo obterCaminhoQRCode($pedido_criado['codigo_qr']); ?>" alt="QR Code" class="img-fluid">
-                                <p class="mt-3">
+                                <img src="<?php echo obterCaminhoQRCode($pedido_criado['codigo_qr']); ?>" alt="QR Code" class="img-fluid border p-2 bg-white" style="max-height: 200px;">
+                                <p class="mt-3 mb-3">
                                     <strong>Código:</strong> PEDIDO-<?php echo $pedido_criado['id']; ?>
                                 </p>
                                 <div class="d-grid gap-2">
-                                    <button onclick="imprimirQRCode()" class="btn btn-primary">
+                                    <button onclick="imprimirQRCode()" class="btn btn-outline-primary">
                                         <i class="bi bi-printer"></i> Imprimir QR Code
                                     </button>
                                 </div>
@@ -154,8 +143,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!-- Formulário de Recebimento -->
 <div class="row">
     <div class="col-md-8 offset-md-2">
-        <div class="card">
-            <div class="card-header">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
                 <i class="bi bi-file-earmark-plus"></i> Novo Pedido
             </div>
             <div class="card-body">
@@ -202,11 +191,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                   placeholder="Observações gerais sobre o pedido"><?php echo isset($_POST['observacao']) ? htmlspecialchars($_POST['observacao']) : ''; ?></textarea>
                     </div>
                     
-                    <div class="d-grid gap-2">
+                    <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="bi bi-save"></i> Salvar Pedido e Gerar QR Code
                         </button>
-                        <a href="../index.php" class="btn btn-secondary">
+                        <a href="../index.php" class="btn btn-link text-muted">
                             <i class="bi bi-arrow-left"></i> Voltar ao Dashboard
                         </a>
                     </div>

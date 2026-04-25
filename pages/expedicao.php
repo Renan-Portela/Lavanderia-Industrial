@@ -2,9 +2,8 @@
 $pageTitle = "Expedição";
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/order_service.php';
+require_once __DIR__ . '/../includes/session_helper.php';
 
-$mensagem = '';
-$tipo_mensagem = '';
 $pedido = null;
 
 // Processar leitura do QR Code
@@ -12,8 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $codigo_qr = trim($_POST['codigo_qr'] ?? '');
     
     if (empty($codigo_qr)) {
-        $mensagem = 'Por favor, informe o código do QR Code.';
-        $tipo_mensagem = 'danger';
+        setFlash('danger', 'Por favor, informe o código do QR Code.');
     } else {
         $pedido = OrderService::getByQRCode($codigo_qr);
         
@@ -26,22 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if ($pedido['status'] == 'Lavagem') {
                 if (OrderService::updateStatus($pedido['id'], 'Expedido')) {
                     $pedido['status'] = 'Expedido';
-                    $mensagem = 'Pedido expedido com sucesso!';
-                    $tipo_mensagem = 'success';
+                    setFlash('success', 'Pedido #' . $pedido['id'] . ' expedido com sucesso!');
                 } else {
-                    $mensagem = 'Erro ao atualizar status.';
-                    $tipo_mensagem = 'danger';
+                    setFlash('danger', 'Erro ao atualizar status do pedido.');
                 }
             } else if ($pedido['status'] == 'Expedido') {
-                $mensagem = 'Este pedido já foi expedido.';
-                $tipo_mensagem = 'info';
+                setFlash('info', 'Este pedido já foi expedido.');
             } else {
-                $mensagem = 'Este pedido não está pronto para expedição. Status atual: ' . $pedido['status'];
-                $tipo_mensagem = 'warning';
+                setFlash('warning', 'Este pedido não está pronto para expedição. Status atual: ' . $pedido['status']);
             }
         } else {
-            $mensagem = 'Pedido não encontrado ou código inválido.';
-            $tipo_mensagem = 'danger';
+            setFlash('danger', 'Pedido não encontrado ou código inválido.');
         }
     }
 }
@@ -55,17 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<?php if ($mensagem): ?>
-<div class="alert alert-<?php echo $tipo_mensagem; ?> alert-dismissible fade show" role="alert">
-    <?php echo htmlspecialchars($mensagem); ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
-<?php endif; ?>
-
 <div class="row">
     <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
                 <i class="bi bi-qr-code-scan"></i> Leitura de QR Code
             </div>
             <div class="card-body">
@@ -77,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <small class="form-text text-muted">Digite o código ou escaneie o QR Code do pedido</small>
                     </div>
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-info btn-lg">
+                        <button type="submit" class="btn btn-info text-white btn-lg">
                             <i class="bi bi-check-circle"></i> Concluir Expedição
                         </button>
                     </div>
@@ -88,14 +74,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     <?php if ($pedido): ?>
     <div class="col-md-6">
-        <div class="card">
+        <div class="card shadow-sm border-info">
             <div class="card-header bg-info text-white">
                 <i class="bi bi-info-circle"></i> Informações do Pedido
             </div>
             <div class="card-body">
-                <table class="table table-bordered">
+                <table class="table table-bordered mb-0">
                     <tr>
-                        <th>ID do Pedido:</th>
+                        <th class="w-40">ID do Pedido:</th>
                         <td><strong>#<?php echo $pedido['id']; ?></strong></td>
                     </tr>
                     <tr>
@@ -131,8 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <div class="row mt-4">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
                 <i class="bi bi-list-ul"></i> Pedidos Prontos para Expedição
             </div>
             <div class="card-body">
@@ -144,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 if ($result && $result->num_rows > 0) {
                     echo '<div class="table-responsive">';
-                    echo '<table class="table table-hover">';
+                    echo '<table class="table table-hover align-middle">';
                     echo '<thead><tr><th>ID</th><th>Cliente</th><th>SKU</th><th>Descrição</th><th>Quantidade</th><th>Data</th></tr></thead>';
                     echo '<tbody>';
                     while ($row = $result->fetch_assoc()) {
@@ -160,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     echo '</tbody></table>';
                     echo '</div>';
                 } else {
-                    echo '<p class="text-muted">Nenhum pedido aguardando expedição (em lavagem).</p>';
+                    echo '<p class="text-muted text-center py-3">Nenhum pedido aguardando expedição (em lavagem).</p>';
                 }
                 ?>
             </div>

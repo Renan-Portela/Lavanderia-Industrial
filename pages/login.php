@@ -1,8 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth_helper.php';
+require_once __DIR__ . '/../includes/session_helper.php';
 require_once __DIR__ . '/../conexao.php';
-
-$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'] ?? '';
@@ -15,13 +14,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $result->fetch_assoc();
             if (password_verify($password, $user['password_hash'])) {
                 SessionManager::login($user);
+                setFlash('success', 'Bem-vindo(a), ' . htmlspecialchars($user['username']) . '!');
                 header('Location: ../index.php');
                 exit();
             }
         }
-        $error = 'Usuário ou senha inválidos.';
+        setFlash('danger', 'Usuário ou senha inválidos.');
     } else {
-        $error = 'Por favor, preencha todos os campos.';
+        setFlash('danger', 'Por favor, preencha todos os campos.');
     }
 }
 
@@ -34,6 +34,7 @@ $pageTitle = 'Login';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - LuvaSul</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
         body {
@@ -60,9 +61,12 @@ $pageTitle = 'Login';
             <p class="text-muted">Lavanderia Industrial</p>
         </div>
         
-        <?php if ($error): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo $error; ?>
+        <?php 
+        $flash = getFlash();
+        if ($flash): ?>
+            <div class="alert alert-<?php echo $flash['type']; ?> alert-dismissible fade show" role="alert">
+                <i class="bi <?php echo ($flash['type'] === 'danger' ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill'); ?> me-2"></i>
+                <?php echo $flash['message']; ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
@@ -71,10 +75,12 @@ $pageTitle = 'Login';
             <div class="mb-3">
                 <label for="username" class="form-label">Usuário</label>
                 <input type="text" class="form-control" id="username" name="username" required>
+                <div class="invalid-feedback">Informe o usuário.</div>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Senha</label>
                 <input type="password" class="form-control" id="password" name="password" required>
+                <div class="invalid-feedback">Informe a senha.</div>
             </div>
             <div class="d-grid gap-2 mt-4">
                 <button type="submit" class="btn btn-primary btn-lg">Entrar</button>

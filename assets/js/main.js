@@ -1,4 +1,4 @@
-// Scripts JavaScript customizados
+// Scripts JavaScript customizados para LuvaSul
 
 // Validação de formulários do Bootstrap
 (function () {
@@ -27,14 +27,23 @@ document.addEventListener('change', function(e) {
     }
 });
 
-// Auto-hide alerts após 5 segundos
+// Inicialização de Toasts do Bootstrap
 document.addEventListener('DOMContentLoaded', function() {
-    const alerts = document.querySelectorAll('.alert');
+    var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+    var toastList = toastElList.map(function (toastEl) {
+        return new bootstrap.Toast(toastEl, { delay: 5000 })
+    })
+    toastList.forEach(toast => toast.show())
+});
+
+// Auto-hide alerts fixos (não Toasts) após 8 segundos se não forem de erro
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert:not(.alert-danger)');
     alerts.forEach(function(alert) {
         setTimeout(function() {
             const bsAlert = new bootstrap.Alert(alert);
             bsAlert.close();
-        }, 5000);
+        }, 8000);
     });
 });
 
@@ -54,7 +63,7 @@ function imprimirQRCode() {
 // Função para copiar código QR
 function copiarCodigoQR(codigo) {
     navigator.clipboard.writeText(codigo).then(function() {
-        alert('Código copiado para a área de transferência!');
+        // Usar toast customizado se disponível futuramente, por enquanto alert nativo
+        alert('Código copiado: ' + codigo);
     });
 }
-

@@ -2,11 +2,9 @@
 require_once __DIR__ . '/../includes/auth_helper.php';
 require_once __DIR__ . '/../includes/material_service.php';
 require_once __DIR__ . '/../includes/sku_helper.php';
+require_once __DIR__ . '/../includes/session_helper.php';
 
 SessionManager::requireAdmin();
-
-$success = '';
-$error = '';
 
 // Processar Ações (Create, Update, Delete)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -21,30 +19,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
         
         if (!SKUHelper::validate($data['sku'])) {
-            $error = 'SKU inválido. Use o padrão CAT-MAT-SIZ-WASH (ex: GLV-IND-XL-A).';
+            setFlash('danger', 'SKU inválido. Use o padrão CAT-MAT-SIZ-WASH (ex: GLV-IND-XL-A).');
         } else {
             if ($action === 'create') {
                 if (MaterialService::create($data)) {
-                    $success = 'Material criado com sucesso!';
+                    setFlash('success', 'Material "' . htmlspecialchars($data['nome']) . '" adicionado com sucesso!');
+                    header('Location: materiais.php');
+                    exit();
                 } else {
-                    $error = 'Erro ao criar material. Verifique se o SKU já existe.';
+                    setFlash('danger', 'Erro ao criar material. Verifique se o SKU já existe.');
                 }
             } else {
                 $id = $_POST['id'] ?? 0;
                 if (MaterialService::update($id, $data)) {
-                    $success = 'Material atualizado com sucesso!';
+                    setFlash('success', 'Material atualizado com sucesso!');
+                    header('Location: materiais.php');
+                    exit();
                 } else {
-                    $error = 'Erro ao atualizar material.';
+                    setFlash('danger', 'Erro ao atualizar material.');
                 }
             }
         }
     } elseif ($action === 'delete') {
         $id = $_POST['id'] ?? 0;
         if (MaterialService::delete($id)) {
-            $success = 'Material desativado com sucesso!';
+            setFlash('success', 'Material desativado com sucesso!');
         } else {
-            $error = 'Erro ao desativar material.';
+            setFlash('danger', 'Erro ao desativar material.');
         }
+        header('Location: materiais.php');
+        exit();
     }
 }
 
@@ -58,20 +62,6 @@ require_once __DIR__ . '/../includes/header.php';
     <p>Gerencie os itens padronizados para o processo de lavagem.</p>
 </div>
 
-<?php if ($success): ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i> <?php echo $success; ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-<?php endif; ?>
-
-<?php if ($error): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i> <?php echo $error; ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-<?php endif; ?>
-
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="bi bi-plus-circle"></i> Novo Material</span>
@@ -82,10 +72,12 @@ require_once __DIR__ . '/../includes/header.php';
             <div class="col-md-4">
                 <label for="nome" class="form-label">Nome do Material</label>
                 <input type="text" class="form-control" id="nome" name="nome" placeholder="Ex: Luva de Raspa GG" required>
+                <div class="invalid-feedback">Informe o nome do material.</div>
             </div>
             <div class="col-md-3">
                 <label for="sku" class="form-label">SKU (CAT-MAT-SIZ-WASH)</label>
-                <input type="text" class="form-control" id="sku" name="sku" placeholder="Ex: GLV-RSP-GG-S" required>
+                <input type="text" class="form-control" id="sku" name="sku" placeholder="Ex: GLV-RSP-GG-S" required pattern="^[A-Z0-9]+-[A-Z0-9]+-[A-Z0-9]+-[AS]$">
+                <div class="invalid-feedback">SKU inválido (Ex: GLV-RSP-GG-S).</div>
             </div>
             <div class="col-md-2">
                 <label for="tipo_lavagem" class="form-label">Lavagem</label>
@@ -94,6 +86,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <option value="A">Água (A)</option>
                     <option value="S">Seco (S)</option>
                 </select>
+                <div class="invalid-feedback">Selecione o tipo de lavagem.</div>
             </div>
             <div class="col-md-3">
                 <label for="descricao" class="form-label">Descrição</label>

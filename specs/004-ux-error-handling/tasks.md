@@ -18,31 +18,31 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 [P] Create backup of database schema (`database.sql`)
-- [ ] T002 [P] Verify `session_start()` is called in `includes/auth_helper.php` or `config/config.php`
+- [x] T001 [P] Create backup of database schema (`database.sql`)
+- [x] T002 [P] Verify `session_start()` is called in `includes/auth_helper.php` or `config/config.php`
 
 ## Phase 2: Foundational
 
-- [ ] T003 [P] Create `includes/session_helper.php` with `setFlash()` and `getFlash()` functions
-- [ ] T004 [P] Update `assets/js/main.js` to initialize Bootstrap 5 Toasts and enable `needs-validation` client-side feedback
-- [ ] T005 [P] Add global Toast container and Alert display logic in `includes/header.php`
+- [x] T003 [P] Create `includes/session_helper.php` with `setFlash()` and `getFlash()` functions
+- [x] T004 [P] Update `assets/js/main.js` to initialize Bootstrap 5 Toasts and enable `needs-validation` client-side feedback
+- [x] T005 [P] Add global Toast container and Alert display logic in `includes/header.php`
 
 ## Phase 3: User Story 1 - Structured Feedback (Priority: P1)
 
 ### Implementation
 
-- [ ] T006 [US1] Refactor `pages/login.php` to use the new session-based feedback system
-- [ ] T007 [US1] Refactor `pages/materiais.php` to use `setFlash()` for success/error messages instead of local variables
-- [ ] T008 [US1] Update `pages/recebimento.php` to implement session-based feedback for order creation
-- [ ] T009 [US1] Update `pages/lavagem.php` and `pages/expedicao.php` to show Toasts on successful status transitions
-- [ ] T010 [US1] Ensure all forms in operational pages use Bootstrap 5 `needs-validation` class
+- [x] T006 [US1] Refactor `pages/login.php` to use the new session-based feedback system
+- [x] T007 [US1] Refactor `pages/materiais.php` to use `setFlash()` for success/error messages instead of local variables
+- [x] T008 [US1] Update `pages/recebimento.php` to implement session-based feedback for order creation
+- [x] T009 [US1] Update `pages/lavagem.php` and `pages/expedicao.php` to show Toasts on successful status transitions
+- [x] T010 [US1] Ensure all forms in operational pages use Bootstrap 5 `needs-validation` class
 
 **Checkpoint**: User Story 1 functional and verified. Success Toasts appear top-right; Error Alerts appear in-page.
 
 ## Final Phase: Polish & Cross-Cutting Concerns
 
-- [ ] T011 [P] Audit all `pages/` for any remaining raw PHP error echoes and replace with standardized alerts
-- [ ] T012 [P] Verify Toast auto-dismiss timing (5s) and Alert manual dismissal on 10-inch tablet resolution
+- [x] T011 [P] Audit all `pages/` for any remaining raw PHP error echoes and replace with standardized alerts
+- [x] T012 [P] Verify Toast auto-dismiss timing (5s) and Alert manual dismissal on 10-inch tablet resolution
 
 ## Dependencies
 
