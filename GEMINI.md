@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-[specs/003-standardize-sku-enum/plan.md](specs/003-standardize-sku-enum/plan.md)
+[specs/004-ux-error-handling/plan.md](specs/004-ux-error-handling/plan.md)
 <!-- SPECKIT END -->
 
 ## Constitution
