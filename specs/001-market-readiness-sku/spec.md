@@ -5,6 +5,15 @@
 **Status**: Draft  
 **Input**: User description: "Leia o README.md e analize todo o codigo para fazer com que este projeto fique pronto para o mercado. Investigue pontos de melhoria de acordo com melhores praticas, clean code e crie testes para fazer com que este projeto fique pronto para o mercado. Procure colocar padroes para os itens de lavagem usando uma logica sku."
 
+## Clarifications
+
+### Session 2026-04-24
+- Q: What is the mandatory pattern for SKUs? → A: Hierarchical: `[CAT]-[MAT]-[SIZ]` (e.g., `GLV-IND-XL`).
+- Q: Which pages exactly constitute "operational views" requiring authentication? → A: All internal: Everything except `login.php` and potentially `index.php` (Dashboard).
+- Q: What hashing algorithm should be used for user passwords? → A: `password_hash()` with `PASSWORD_DEFAULT` (bcrypt).
+- Q: Which local PHP library should be used for offline QR generation? → A: `chillerlan/php-qrcode`.
+- Q: How should existing free-text `tipo_material` data be handled? → A: Create "Legacy" SKU for all old records.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Material Standardization (Priority: P1)
@@ -61,9 +70,9 @@ As a system administrator, I want to require authentication for all operational 
 ### Functional Requirements
 
 - **FR-001**: **Material Catalog**: System MUST provide a CRUD interface for materials including fields: Name, Description, and SKU.
-- **FR-002**: **SKU Standardization**: Materials MUST have unique SKUs following a configurable pattern.
+- **FR-002**: **SKU Standardization**: Materials MUST have unique SKUs following the hierarchical pattern `[CAT]-[MAT]-[SIZ]` (e.g., `GLV-IND-XL`).
 - **FR-003**: **Standardized Receiving**: The Receiving form MUST use a selection from the catalog for materials, replacing free-text input.
-- **FR-004**: **Authentication System**: System MUST implement a secure login mechanism for all operational views.
+- **FR-004**: **Authentication System**: System MUST implement a secure login mechanism for all internal pages (everything except `login.php` and `index.php`).
 - **FR-005**: **Automated Testing**: System MUST include automated tests covering:
   - QR Code generation logic.
   - Order status transition rules.
@@ -72,7 +81,7 @@ As a system administrator, I want to require authentication for all operational 
 ### Non-Functional Requirements
 
 - **NFR-001**: **Architectural Separation**: Code MUST be refactored to separate business logic from UI presentation.
-- **NFR-002**: **Reliable Tracking**: QR Code generation SHOULD NOT depend on external 3rd party APIs for core operations.
+- **NFR-002**: **Reliable Tracking**: QR Code generation MUST use the local `chillerlan/php-qrcode` library to ensure operation without external internet access.
 - **NFR-003**: **Data Integrity**: Database MUST use relational constraints between Pedidos and the new Materiais table.
 - **NFR-004**: **Interface Responsiveness**: Every operational screen MUST be optimized for mobile and tablet use on the laundry floor.
 
@@ -95,5 +104,5 @@ As a system administrator, I want to require authentication for all operational 
 
 - The current execution environment supports modern automated testing frameworks.
 - The user will provide or approve the initial SKU naming convention for existing items.
-- Migration of existing "raw string" material data to the new catalog is part of the implementation.
+- Migration of existing "raw string" material data will involve creating a "Legacy" SKU to maintain historical record integrity.
 - Standard modern web primitives and a responsive CSS framework will be used for UI components.
