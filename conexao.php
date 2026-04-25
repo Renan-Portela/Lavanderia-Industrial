@@ -13,7 +13,32 @@ function conectarDB() {
     return $conn;
 }
 
-// Função para criar banco e tabela se não existirem
+// Função para executar query preparada
+function executarQuery($sql, $params = [], $types = "") {
+    $conn = conectarDB();
+    $stmt = $conn->prepare($sql);
+    
+    if (!$stmt) {
+        die("Erro na preparação da query: " . $conn->error);
+    }
+    
+    if (!empty($params)) {
+        if (empty($types)) {
+            $types = str_repeat("s", count($params));
+        }
+        $stmt->bind_param($types, ...$params);
+    }
+    
+    $success = $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $stmt->close();
+    $conn->close();
+    
+    return $result !== false ? $result : $success;
+}
+
+// Função para inicializar o banco e tabelas (Migrações)
 function inicializarDB() {
     $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
     
@@ -29,21 +54,54 @@ function inicializarDB() {
     // Conectar ao banco criado
     $conn = conectarDB();
     
-    // Criar tabela pedidos se não existir
+    // Tabela Materiais
+    $sql = "CREATE TABLE IF NOT EXISTS materiais (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nome VARCHAR(255) NOT NULL UNIQUE,
+        sku VARCHAR(50) NOT NULL UNIQUE,
+        tipo_lavagem ENUM('A', 'S') NOT NULL,
+        descricao TEXT,
+        is_active BOOLEAN DEFAULT 1,
+        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+    $conn->query($sql);
+    
+    // Tabela Usuarios
+    $sql = "CREATE TABLE IF NOT EXISTS usuarios (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50) NOT NULL UNIQUE,
+        password_hash VARCHAR(255) NOT NULL,
+        perfil ENUM('Admin', 'Operador') NOT NULL,
+        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+    $conn->query($sql);
+    
+    // Tabela Pedidos (com material_id)
     $sql = "CREATE TABLE IF NOT EXISTS pedidos (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        material_id INT,
         cliente VARCHAR(100) NOT NULL,
         tipo_material VARCHAR(100) NOT NULL,
         quantidade INT NOT NULL,
         observacao TEXT,
-        status VARCHAR(30) NOT NULL DEFAULT 'Recebido',
+        status ENUM('Recebido', 'Lavagem', 'Expedido') NOT NULL DEFAULT 'Recebido',
         codigo_qr VARCHAR(255),
-        data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP
+        data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (material_id) REFERENCES materiais(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-    
     $conn->query($sql);
     
-    // Criar tabela avaliacoes se não existir
+    // Garantir que material_id existe (para bases legadas)
+    $result = $conn->query("SHOW COLUMNS FROM pedidos LIKE 'material_id'");
+    if ($result->num_rows == 0) {
+        $conn->query("ALTER TABLE pedidos ADD COLUMN material_id INT AFTER id");
+        $conn->query("ALTER TABLE pedidos ADD FOREIGN KEY (material_id) REFERENCES materiais(id)");
+    }
+
+    // Garantir que status é ENUM
+    $conn->query("ALTER TABLE pedidos MODIFY COLUMN status ENUM('Recebido', 'Lavagem', 'Expedido') NOT NULL DEFAULT 'Recebido'");
+    
+    // Tabela Avaliações
     $sql = "CREATE TABLE IF NOT EXISTS avaliacoes (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nome VARCHAR(100) NOT NULL,
@@ -51,10 +109,9 @@ function inicializarDB() {
         comentario TEXT,
         data_avaliacao DATETIME DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-    
     $conn->query($sql);
     
-    // Criar tabela sugestoes se não existir
+    // Tabela Sugestões
     $sql = "CREATE TABLE IF NOT EXISTS sugestoes (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nome VARCHAR(100) NOT NULL,
@@ -62,10 +119,8 @@ function inicializarDB() {
         mensagem TEXT NOT NULL,
         data_envio DATETIME DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-    
     $conn->query($sql);
     
     return $conn;
 }
 ?>
-

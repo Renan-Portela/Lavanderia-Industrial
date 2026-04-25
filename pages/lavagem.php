@@ -1,6 +1,7 @@
 <?php
 $pageTitle = "Lavagem";
 require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/order_service.php';
 
 $mensagem = '';
 $tipo_mensagem = '';
@@ -14,49 +15,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $mensagem = 'Por favor, informe o código do QR Code.';
         $tipo_mensagem = 'danger';
     } else {
-        // Extrair ID do pedido do código (formato: PEDIDO-123)
-        if (preg_match('/PEDIDO-(\d+)/i', $codigo_qr, $matches)) {
-            $pedido_id = intval($matches[1]);
-            
-            // Buscar pedido
-            $stmt = $conn->prepare("SELECT * FROM pedidos WHERE id = ?");
-            $stmt->bind_param("i", $pedido_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            
-            if ($result->num_rows > 0) {
-                $pedido = $result->fetch_assoc();
-                
-                // Verificar se pode iniciar lavagem
-                if ($pedido['status'] == 'Recebido') {
-                    // Atualizar status para "Em Lavagem"
-                    $stmt2 = $conn->prepare("UPDATE pedidos SET status = 'Em Lavagem' WHERE id = ?");
-                    $stmt2->bind_param("i", $pedido_id);
-                    
-                    if ($stmt2->execute()) {
-                        $pedido['status'] = 'Em Lavagem';
-                        $mensagem = 'Lavagem iniciada com sucesso!';
-                        $tipo_mensagem = 'success';
-                    } else {
-                        $mensagem = 'Erro ao atualizar status: ' . $conn->error;
-                        $tipo_mensagem = 'danger';
-                    }
-                    $stmt2->close();
-                } else if ($pedido['status'] == 'Em Lavagem') {
-                    $mensagem = 'Este pedido já está em lavagem.';
-                    $tipo_mensagem = 'info';
+        $pedido = OrderService::getByQRCode($codigo_qr);
+        
+        if ($pedido) {
+            if ($pedido['status'] == 'Recebido') {
+                if (OrderService::updateStatus($pedido['id'], 'Lavagem')) {
+                    $pedido['status'] = 'Lavagem';
+                    $mensagem = 'Lavagem iniciada com sucesso!';
+                    $tipo_mensagem = 'success';
                 } else {
-                    $mensagem = 'Este pedido não pode ser iniciado na lavagem. Status atual: ' . $pedido['status'];
-                    $tipo_mensagem = 'warning';
+                    $mensagem = 'Erro ao atualizar status.';
+                    $tipo_mensagem = 'danger';
                 }
+            } else if ($pedido['status'] == 'Lavagem') {
+                $mensagem = 'Este pedido já está em lavagem.';
+                $tipo_mensagem = 'info';
             } else {
-                $mensagem = 'Pedido não encontrado. Verifique o código do QR Code.';
-                $tipo_mensagem = 'danger';
+                $mensagem = 'Este pedido não pode ser iniciado na lavagem. Status atual: ' . $pedido['status'];
+                $tipo_mensagem = 'warning';
             }
-            
-            $stmt->close();
         } else {
-            $mensagem = 'Código QR inválido. Formato esperado: PEDIDO-123';
+            $mensagem = 'Pedido não encontrado ou código inválido.';
             $tipo_mensagem = 'danger';
         }
     }
@@ -85,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <i class="bi bi-qr-code-scan"></i> Leitura de QR Code
             </div>
             <div class="card-body">
-                <form method="POST" action="">
+                <form method="POST" class="needs-validation" novalidate>
                     <div class="mb-3">
                         <label for="codigo_qr" class="form-label">Código do QR Code</label>
                         <input type="text" class="form-control form-control-lg" id="codigo_qr" name="codigo_qr" 
@@ -119,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <td><?php echo htmlspecialchars($pedido['cliente']); ?></td>
                     </tr>
                     <tr>
-                        <th>Tipo de Material:</th>
+                        <th>Material:</th>
                         <td><?php echo htmlspecialchars($pedido['tipo_material']); ?></td>
                     </tr>
                     <tr>
@@ -132,24 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <span class="badge bg-warning text-dark"><?php echo $pedido['status']; ?></span>
                         </td>
                     </tr>
-                    <?php if ($pedido['observacao']): ?>
-                    <tr>
-                        <th>Observações:</th>
-                        <td><?php echo nl2br(htmlspecialchars($pedido['observacao'])); ?></td>
-                    </tr>
-                    <?php endif; ?>
-                    <tr>
-                        <th>Data de Cadastro:</th>
-                        <td><?php echo date('d/m/Y H:i', strtotime($pedido['data_cadastro'])); ?></td>
-                    </tr>
                 </table>
-                
-                <?php if ($pedido['status'] == 'Em Lavagem'): ?>
-                <div class="alert alert-info mt-3">
-                    <i class="bi bi-info-circle"></i> 
-                    <strong>Próximo passo:</strong> Após concluir a lavagem, atualize o status para "Pronto para Expedição" na página de Expedição.
-                </div>
-                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -164,10 +126,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             <div class="card-body">
                 <?php
-                $sql = "SELECT * FROM pedidos WHERE status = 'Em Lavagem' ORDER BY data_cadastro DESC";
+                $sql = "SELECT * FROM pedidos WHERE status = 'Lavagem' ORDER BY data_cadastro DESC";
                 $result = $conn->query($sql);
                 
-                if ($result->num_rows > 0) {
+                if ($result && $result->num_rows > 0) {
                     echo '<div class="table-responsive">';
                     echo '<table class="table table-hover">';
                     echo '<thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Quantidade</th><th>Data</th></tr></thead>';
@@ -193,7 +155,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </div>
 
 <?php
-$conn->close();
 require_once __DIR__ . '/../includes/footer.php';
 ?>
-

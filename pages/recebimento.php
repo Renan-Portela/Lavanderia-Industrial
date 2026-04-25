@@ -2,25 +2,34 @@
 $pageTitle = "Recebimento";
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/qrcode_helper.php';
+require_once __DIR__ . '/../includes/material_service.php';
 
 $mensagem = '';
 $tipo_mensagem = '';
 $pedido_criado = null;
 
+// Buscar materiais do catálogo
+$materiais_catalogo = MaterialService::getAll();
+
 // Processar formulário
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $cliente = trim($_POST['cliente'] ?? '');
-    $tipo_material = trim($_POST['tipo_material'] ?? '');
+    $material_id = intval($_POST['material_id'] ?? 0);
     $quantidade = intval($_POST['quantidade'] ?? 0);
     $observacao = trim($_POST['observacao'] ?? '');
     
-    if (empty($cliente) || empty($tipo_material) || $quantidade <= 0) {
+    if (empty($cliente) || $material_id <= 0 || $quantidade <= 0) {
         $mensagem = 'Por favor, preencha todos os campos obrigatórios.';
         $tipo_mensagem = 'danger';
     } else {
-        // Inserir pedido
-        $stmt = $conn->prepare("INSERT INTO pedidos (cliente, tipo_material, quantidade, observacao, status) VALUES (?, ?, ?, ?, 'Recebido')");
-        $stmt->bind_param("ssis", $cliente, $tipo_material, $quantidade, $observacao);
+        // Buscar info do material para manter tipo_material (legado) se necessário
+        $material_info = MaterialService::getById($material_id);
+        $tipo_material = $material_info['nome'];
+
+        // Inserir pedido usando material_id
+        $sql = "INSERT INTO pedidos (cliente, material_id, tipo_material, quantidade, observacao, status) VALUES (?, ?, ?, ?, ?, 'Recebido')";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sisss", $cliente, $material_id, $tipo_material, $quantidade, $observacao);
         
         if ($stmt->execute()) {
             $pedido_id = $conn->insert_id;
@@ -37,8 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt2->close();
             }
             
-            // Buscar pedido criado
-            $result = $conn->query("SELECT * FROM pedidos WHERE id = $pedido_id");
+            // Buscar pedido criado com join no material
+            $sql_buscar = "SELECT p.*, m.nome as material_nome, m.sku as material_sku 
+                          FROM pedidos p 
+                          LEFT JOIN materiais m ON p.material_id = m.id 
+                          WHERE p.id = $pedido_id";
+            $result = $conn->query($sql_buscar);
             $pedido_criado = $result->fetch_assoc();
             
             $mensagem = 'Pedido cadastrado com sucesso! QR Code gerado.';
@@ -72,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!-- Exibir QR Code após criação -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card">
+        <div class="card border-success">
             <div class="card-header bg-success text-white">
                 <i class="bi bi-check-circle"></i> Pedido Cadastrado com Sucesso!
             </div>
@@ -82,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <h5>Dados do Pedido</h5>
                         <table class="table table-bordered">
                             <tr>
-                                <th>ID do Pedido:</th>
+                                <th class="w-25">ID do Pedido:</th>
                                 <td><strong>#<?php echo $pedido_criado['id']; ?></strong></td>
                             </tr>
                             <tr>
@@ -90,8 +103,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <td><?php echo htmlspecialchars($pedido_criado['cliente']); ?></td>
                             </tr>
                             <tr>
-                                <th>Tipo de Material:</th>
-                                <td><?php echo htmlspecialchars($pedido_criado['tipo_material']); ?></td>
+                                <th>Material:</th>
+                                <td>
+                                    <strong><?php echo htmlspecialchars($pedido_criado['material_nome']); ?></strong>
+                                    <br><small class="text-muted">SKU: <?php echo $pedido_criado['material_sku']; ?></small>
+                                </td>
                             </tr>
                             <tr>
                                 <th>Quantidade:</th>
@@ -115,9 +131,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <button onclick="imprimirQRCode()" class="btn btn-primary">
                                         <i class="bi bi-printer"></i> Imprimir QR Code
                                     </button>
-                                    <button onclick="copiarCodigoQR('PEDIDO-<?php echo $pedido_criado['id']; ?>')" class="btn btn-secondary">
-                                        <i class="bi bi-clipboard"></i> Copiar Código
-                                    </button>
                                 </div>
                             <?php else: ?>
                                 <p class="text-danger">Erro ao gerar QR Code</p>
@@ -139,29 +152,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <i class="bi bi-file-earmark-plus"></i> Novo Pedido
             </div>
             <div class="card-body">
-                <form method="POST" action="">
+                <form method="POST" class="needs-validation" novalidate>
                     <div class="mb-3">
                         <label for="cliente" class="form-label">Cliente <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="cliente" name="cliente" required 
                                placeholder="Nome da empresa cliente" value="<?php echo isset($_POST['cliente']) ? htmlspecialchars($_POST['cliente']) : ''; ?>">
+                        <div class="invalid-feedback">Por favor, informe o cliente.</div>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="tipo_material" class="form-label">Tipo de Material <span class="text-danger">*</span></label>
-                        <select class="form-select" id="tipo_material" name="tipo_material" required>
-                            <option value="">Selecione...</option>
-                            <option value="EPI" <?php echo (isset($_POST['tipo_material']) && $_POST['tipo_material'] == 'EPI') ? 'selected' : ''; ?>>EPI</option>
-                            <option value="Uniforme" <?php echo (isset($_POST['tipo_material']) && $_POST['tipo_material'] == 'Uniforme') ? 'selected' : ''; ?>>Uniforme</option>
-                            <option value="Toalha" <?php echo (isset($_POST['tipo_material']) && $_POST['tipo_material'] == 'Toalha') ? 'selected' : ''; ?>>Toalha</option>
-                            <option value="Roupa de Cama" <?php echo (isset($_POST['tipo_material']) && $_POST['tipo_material'] == 'Roupa de Cama') ? 'selected' : ''; ?>>Roupa de Cama</option>
-                            <option value="Outro" <?php echo (isset($_POST['tipo_material']) && $_POST['tipo_material'] == 'Outro') ? 'selected' : ''; ?>>Outro</option>
+                        <label for="material_id" class="form-label">Material do Catálogo <span class="text-danger">*</span></label>
+                        <select class="form-select" id="material_id" name="material_id" required>
+                            <option value="" selected disabled>Selecione um item do catálogo...</option>
+                            <?php foreach ($materiais_catalogo as $m): ?>
+                                <option value="<?php echo $m['id']; ?>" <?php echo (isset($_POST['material_id']) && $_POST['material_id'] == $m['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($m['nome']); ?> (<?php echo $m['sku']; ?>)
+                                </option>
+                            <?php endforeach; ?>
                         </select>
+                        <div class="invalid-feedback">Por favor, selecione um material.</div>
+                        <div class="form-text">Somente itens cadastrados no catálogo podem ser recebidos.</div>
                     </div>
                     
                     <div class="mb-3">
                         <label for="quantidade" class="form-label">Quantidade <span class="text-danger">*</span></label>
                         <input type="number" class="form-control" id="quantidade" name="quantidade" required 
                                min="1" placeholder="Quantidade de itens" value="<?php echo isset($_POST['quantidade']) ? htmlspecialchars($_POST['quantidade']) : ''; ?>">
+                        <div class="invalid-feedback">A quantidade deve ser maior que zero.</div>
                     </div>
                     
                     <div class="mb-3">
@@ -185,7 +202,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </div>
 
 <?php
-$conn->close();
 require_once __DIR__ . '/../includes/footer.php';
 ?>
-

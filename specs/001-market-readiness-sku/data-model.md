@@ -2,40 +2,46 @@
 
 ## Entities
 
-### Material
-Represents a standardized item that can be processed.
-- `id` (INT, PK, AUTO_INCREMENT)
-- `name` (VARCHAR(100), NOT NULL): Display name (e.g., "Industrial Glove")
-- `sku` (VARCHAR(50), UNIQUE, NOT NULL): Standardized SKU (e.g., `GLV-IND-XL`)
-- `description` (TEXT): Detailed description
-- `category_prefix` (VARCHAR(10)): e.g., `GLV`
-- `material_prefix` (VARCHAR(10)): e.g., `IND`
-- `size_prefix` (VARCHAR(10)): e.g., `XL`
-- `created_at` (DATETIME, DEFAULT CURRENT_TIMESTAMP)
+### Material (Standardized SKU Catalog)
+Represents a unique type of item that can be processed.
 
-### User
-Represents an authorized personnel with system access.
-- `id` (INT, PK, AUTO_INCREMENT)
-- `username` (VARCHAR(50), UNIQUE, NOT NULL)
-- `password_hash` (VARCHAR(255), NOT NULL): Hashed using bcrypt
-- `created_at` (DATETIME, DEFAULT CURRENT_TIMESTAMP)
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| `id` | INT (PK) | Auto-increment identifier | |
+| `nome` | VARCHAR(255) | Display name (e.g., "Luva de Raspa GG") | Required, Unique |
+| `sku` | VARCHAR(50) | Unique SKU [CAT]-[MAT]-[SIZ] | Required, Unique, Pattern Match |
+| `tipo_lavagem` | ENUM | 'AGUA' or 'SECO' | Required |
+| `descricao` | TEXT | Optional details | |
+| `data_criacao` | TIMESTAMP | Creation record | |
 
-### Order (Updated)
-Existing `pedidos` table with standardized material reference.
-- `id` (INT, PK, AUTO_INCREMENT)
-- `cliente` (VARCHAR(100), NOT NULL)
-- `material_id` (INT, FK): Reference to `materials.id`
-- `tipo_material` (VARCHAR(100), NOT NULL): Denormalized `materials.name` for historical records
-- `quantidade` (INT, NOT NULL)
-- `observacao` (TEXT)
-- `status` (VARCHAR(30), DEFAULT 'Recebido')
-- `codigo_qr` (VARCHAR(255))
-- `data_cadastro` (DATETIME, DEFAULT CURRENT_TIMESTAMP)
+### Pedido (Order) - Updated
+Represents a laundry order/item.
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| `id` | INT (PK) | Auto-increment identifier | |
+| `material_id` | INT (FK) | Reference to `material.id` | Required |
+| `quantidade` | INT | Number of items | > 0 |
+| `cliente` | VARCHAR(255) | Name of the customer | Required |
+| `status` | ENUM | 'Recebido', 'Lavagem', 'Expedido' | Required |
+| `data_entrada` | TIMESTAMP | Entry time | |
+| `qr_code_path` | VARCHAR(255) | Path to generated image | |
+
+### Usuario (Authentication)
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| `id` | INT (PK) | | |
+| `username` | VARCHAR(50) | | Unique |
+| `password_hash`| VARCHAR(255) | Hashed password | bcrypt |
+| `perfil` | ENUM | 'Admin', 'Operador' | |
 
 ## Relationships
-- `Order` belongs to `Material` (Many-to-One)
+- **Material 1:N Pedido**: One material type can be associated with many orders.
+- **Pedido N:1 Usuario**: (Optional) To track who created the order.
 
-## Validation Rules
-- `Material.sku`: Must be unique and follow the `[CAT]-[MAT]-[SIZ]` pattern.
-- `User.password_hash`: Must be generated using `password_hash()` with `PASSWORD_DEFAULT`.
-- `Order.status`: Must only transition in the order `Recebido` -> `Lavagem` -> `Expedição`.
+## State Transitions (Process Flow)
+1. **Recebido**: Initial state upon entry.
+2. **Lavagem**: After receiving, before expedition.
+3. **Expedido**: Final state, item returned to client.
+
+*Constraint*: Status cannot skip 'Lavagem' or revert from 'Expedido' to 'Recebido'.

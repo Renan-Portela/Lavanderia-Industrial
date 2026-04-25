@@ -1,36 +1,58 @@
-# Research: Market Readiness & SKU Standardization
+# Research: Industrial Washing Standards & SKU Strategy
 
-## Decision: Testing Framework
-- **Chosen**: **PHPUnit**
-- **Rationale**: Industry standard, extensive documentation, and easy integration even in no-framework projects.
-- **Alternatives considered**:
-  - Pest: Excellent, but requires PHP 8.1+. Project currently targets 7.4+.
-  - SimpleTest: Lightweight but less modern and lacks some reporting features of PHPUnit.
-  - Manual asserts: Rejected as it doesn't scale for market readiness.
+## Overview
+This document consolidates research on industrial washing patterns for PPE (EPI) and industrial cloths to ensure market readiness and process integrity.
 
-## Decision: Authentication Mechanism
-- **Chosen**: **Session-based with bcrypt hashing**
-- **Rationale**: Simple, secure, and fits perfectly with structured PHP. Uses native `password_hash()` and `password_verify()`.
-- **Alternatives considered**:
-  - JWT: Overkill for this monolithic application.
-  - Hardcoded credentials: Rejected as insecure and not scalable.
+## 1. Professional PPE (EPI) Washing Standards
 
-## Decision: SKU Standardization Pattern
-- **Chosen**: `[CAT]-[MAT]-[SIZ]` (e.g., `GLV-IND-XL`)
-- **Rationale**: Concise, human-readable, and follows industrial laundry best practices.
-  - `CAT`: Category (3 chars)
-  - `MAT`: Material/Type (3 chars)
-  - `SIZ`: Size (1-3 chars)
-- **Alternatives considered**:
-  - Sequential numbers only: Rejected as they lack descriptive value for operators.
-  - Free-text: Current state, rejected for data inconsistency.
+### Leather and "Raspa" (Split Leather)
+- **Standard**: Dry Cleaning (Lavagem a Seco) only.
+- **Decision**: All items made of leather or "raspa" (gloves, aprons, sleeves) MUST be dry cleaned using organic solvents (Perc/Hydrocarbon).
+- **Rationale**: Water washing strips natural oils, causing hardening, shrinking, and permanent loss of protective integrity (Reference: ABNT NBR 16295, ISO 15797).
+- **Alternatives**: Water washing with specific oils (too expensive and complex for this scale).
 
-## Decision: Architectural Refactoring
-- **Chosen**: **Service-oriented helpers in `includes/`**
-- **Rationale**: Separation of business logic from UI.
-  - Initialize Composer to provide PSR-4 autoloading.
-  - Move core logic (Status transitions, QR generation, Material validation) into classes under `src/`.
-  - UI pages in `pages/` will use these services.
-- **Alternatives considered**:
-  - Full Framework (Laravel/Slim): Rejected due to Constitution Principle III (Structured Simplicity).
-  - Procedural logic in pages: Current state, rejected as it makes automated testing nearly impossible.
+### General Industrial PPE
+- **Helmets**: Hand wash with neutral soap and water (<40°C). NO machine wash.
+- **Boots (PVC/Rubber)**: Industrial water wash with sanitizing agents.
+- **Aprons (PVC/Nylon)**: Industrial water wash (40°C-60°C).
+
+## 2. Industrial Cloth Color Coding
+- **Blue (Azul)**: General Industry (Maintenance, machinery).
+- **Red (Vermelho)**: Print Shops (Grafica) / Hazardous (Inks, solvents).
+- **Green (Verde)**: Assembly/Precision (Clean areas, electronics).
+
+## 3. SKU Strategy [CAT]-[MAT]-[SIZ]
+
+### Pattern: `[CAT]-[MAT]-[SIZ]`
+- **CAT (Category)**:
+  - `GLV`: Glove (Luva)
+  - `APR`: Apron (Avental)
+  - `HLM`: Helmet (Capacete)
+  - `BTT`: Boot (Bota)
+  - `CLO`: Cloth (Pano)
+  - `SLV`: Sleeve (Mangote)
+- **MAT (Material)**:
+  - `RSP`: Raspa
+  - `LTH`: Leather (Couro)
+  - `PVC`: PVC
+  - `NYL`: Nylon
+  - `COT`: Cotton (Algodão)
+  - `BLU`: Blue (for cloths)
+  - `RED`: Red (for cloths)
+  - `GRN`: Green (for cloths)
+- **SIZ (Size)**:
+  - `UNI`: Universal
+  - `P/M/G/GG`: Standard sizes
+  - `038-045`: Numeric sizes for boots
+
+### Examples:
+- `GLV-RSP-GG`: Glove, Raspa, Extra Large.
+- `CLO-BLU-UNI`: Cloth, Blue, Universal.
+- `BTT-PVC-042`: Boot, PVC, Size 42.
+
+## 4. Architectural Decisions
+
+### Washing Method Placement
+- **Decision**: Stored as a property of the **Material (SKU)**.
+- **Rationale**: The material composition dictates the washing method (e.g., Raspa must never touch water). Storing it at the SKU level ensures process integrity and prevents operator error during the receiving/washing transition.
+- **Alternatives**: Order-level property (rejected because it risks human error during entry).

@@ -1,51 +1,37 @@
-# Quickstart: Market Readiness & SKU Standardization
+# Quickstart: SKU Standardization Implementation
 
-## Prerequisites
-- PHP 7.4+
-- MySQL 5.7+
-- Composer (for testing)
+## 1. Database Setup
+Execute the migrations in `database.sql` (to be created) which include:
+- Creating the `materiais` table.
+- Creating the `usuarios` table.
+- Updating `pedidos` to reference `material_id`.
 
-## Setup
-1. **Initialize Composer**:
-   ```bash
-   composer init
-   composer require --dev phpunit/phpunit
-   ```
-2. **Database Migration**:
-   Run the following in your MySQL console:
-   ```sql
-   -- Create materials table
-   CREATE TABLE materials (
-       id INT AUTO_INCREMENT PRIMARY KEY,
-       name VARCHAR(100) NOT NULL,
-       sku VARCHAR(50) UNIQUE NOT NULL,
-       description TEXT,
-       category_prefix VARCHAR(10),
-       material_prefix VARCHAR(10),
-       size_prefix VARCHAR(10),
-       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-   );
-
-   -- Create users table
-   CREATE TABLE users (
-       id INT AUTO_INCREMENT PRIMARY KEY,
-       username VARCHAR(50) UNIQUE NOT NULL,
-       password_hash VARCHAR(255) NOT NULL,
-       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-   );
-
-   -- Update pedidos table
-   ALTER TABLE pedidos ADD COLUMN material_id INT, ADD FOREIGN KEY (material_id) REFERENCES materials(id);
-   ```
-3. **Seed Initial Admin**:
-   ```bash
-   php scripts/create_admin.php admin password123
-   ```
-
-## Running Tests
-```bash
-./vendor/bin/phpunit tests
+## 2. Initial Catalog Seed
+Populate the `materiais` table with standard PPE items:
+```sql
+INSERT INTO materiais (nome, sku, tipo_lavagem) VALUES 
+('Luva de Raspa G', 'GLV-RSP-G', 'SECO'),
+('Avental de Raspa', 'APR-RSP-UNI', 'SECO'),
+('Capacete Industrial', 'HLM-PVC-UNI', 'AGUA'),
+('Pano Azul (Indústria)', 'CLO-BLU-UNI', 'AGUA'),
+('Pano Vermelho (Gráfica)', 'CLO-RED-UNI', 'AGUA');
 ```
 
-## Accessing the Catalog
-Navigate to `pages/material_catalog.php` to manage your SKUs. All operational pages (Recebimento, Lavagem, Expedição) now require login.
+## 3. Configuration
+- Ensure `config/config.php` has correct DB credentials.
+- Ensure `qrcodes/` is writable (`chmod 777`).
+- Install dependencies via `composer install` (if using local QR generator).
+
+## 4. Operational Flow
+1. **Login**: Access `login.php`.
+2. **Catalog**: View/Edit materials in `pages/materiais.php`.
+3. **Receiving**: Use `pages/recebimento.php` to create an order selecting from the catalog.
+4. **Washing**: Update status in `pages/lavagem.php`.
+5. **Expedition**: Complete flow in `pages/expedicao.php`.
+
+## 5. Verification
+Run the automated test suite:
+```bash
+./vendor/bin/phpunit tests/
+```
+(Or manual check of the flow integrity).

@@ -1,6 +1,14 @@
 <?php
+require_once __DIR__ . '/../includes/auth_helper.php';
 require_once __DIR__ . '/../conexao.php';
+
+// Inicializar banco de dados (Migrações automáticas se necessário)
 $conn = inicializarDB();
+
+// Proteção global: Redirecionar se não estiver logado (exceto página de login)
+if (basename($_SERVER['PHP_SELF']) !== 'login.php') {
+    SessionManager::requireLogin();
+}
 
 // Garantir que o diretório de QR codes existe
 if (!file_exists(QR_CODE_DIR)) {
@@ -28,7 +36,7 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/pages/') !== false) ? '../' : '';
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="<?php echo $base_path; ?>index.php">
                 <i class="bi bi-house-door-fill"></i> <?php echo SITE_NAME; ?>
@@ -37,7 +45,7 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/pages/') !== false) ? '../' : '';
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>" href="<?php echo $base_path; ?>index.php">
                             <i class="bi bi-speedometer2"></i> Dashboard
@@ -58,39 +66,33 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/pages/') !== false) ? '../' : '';
                             <i class="bi bi-box-arrow-up"></i> Expedição
                         </a>
                     </li>
+                    
+                    <?php if (SessionManager::getRole() === 'Admin'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'materiais.php' ? 'active' : ''; ?>" href="<?php echo $base_path; ?>pages/materiais.php">
+                            <i class="bi bi-tags"></i> Catálogo
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    
                     <li class="nav-item">
                         <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'relatorios.php' ? 'active' : ''; ?>" href="<?php echo $base_path; ?>pages/relatorios.php">
                             <i class="bi bi-file-earmark-text"></i> Relatórios
                         </a>
                     </li>
+                </ul>
+                
+                <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item dropdown">
-                        <?php
-                        $currentPage = basename($_SERVER['PHP_SELF']);
-                        $dropdownPages = ['sobre.php', 'avaliacao.php', 'contato.php', 'sugestoes.php'];
-                        $isDropdownActive = in_array($currentPage, $dropdownPages);
-                        ?>
-                        <a class="nav-link dropdown-toggle <?php echo $isDropdownActive ? 'active' : ''; ?>" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-three-dots-vertical"></i> Mais
+                        <a class="nav-link dropdown-toggle text-white fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> <?php echo $_SESSION['username'] ?? 'Usuário'; ?> 
+                            <span class="badge bg-light text-primary ms-1"><?php echo SessionManager::getRole(); ?></span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item <?php echo $currentPage == 'sobre.php' ? 'active' : ''; ?>" href="<?php echo $base_path; ?>pages/sobre.php">
-                                    <i class="bi bi-info-circle"></i> Sobre
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item <?php echo $currentPage == 'avaliacao.php' ? 'active' : ''; ?>" href="<?php echo $base_path; ?>pages/avaliacao.php">
-                                    <i class="bi bi-star"></i> Avaliação
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item <?php echo $currentPage == 'contato.php' ? 'active' : ''; ?>" href="<?php echo $base_path; ?>pages/contato.php">
-                                    <i class="bi bi-people"></i> Contato
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item <?php echo $currentPage == 'sugestoes.php' ? 'active' : ''; ?>" href="<?php echo $base_path; ?>pages/sugestoes.php">
-                                    <i class="bi bi-lightbulb"></i> Sugestões
+                                <a class="dropdown-item text-danger" href="<?php echo $base_path; ?>logout.php">
+                                    <i class="bi bi-box-arrow-right"></i> Sair
                                 </a>
                             </li>
                         </ul>
@@ -101,4 +103,3 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/pages/') !== false) ? '../' : '';
     </nav>
 
     <div class="container-fluid mt-4">
-

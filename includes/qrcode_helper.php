@@ -1,6 +1,13 @@
 <?php
-// Helper para geração de QR Codes
-// Requer a biblioteca phpqrcode: composer require endroid/qr-code ou baixar manualmente
+/**
+ * Helper para geração de QR Codes
+ * Usa a biblioteca chillerlan/php-qrcode (instalada via Composer)
+ */
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 
 function gerarQRCode($texto, $nomeArquivo = null) {
     $qrDir = QR_CODE_DIR;
@@ -17,44 +24,34 @@ function gerarQRCode($texto, $nomeArquivo = null) {
     
     $caminhoCompleto = $qrDir . $nomeArquivo;
     
-    // Tentar usar a biblioteca phpqrcode (se disponível)
-    if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-        // Usando Composer (endroid/qr-code)
-        require_once __DIR__ . '/../vendor/autoload.php';
+    try {
+        $options = new QROptions([
+            'version'    => 5,
+            'outputType' => QRCode::OUTPUT_IMAGE_PNG,
+            'eccLevel'   => QRCode::ECC_L,
+            'scale'      => 5,
+        ]);
         
-        try {
-            $qrCode = \Endroid\QrCode\QrCode::create($texto)
-                ->setSize(300)
-                ->setMargin(10);
-            
-            $writer = new \Endroid\QrCode\Writer\PngWriter();
-            $result = $writer->write($qrCode);
-            $result->saveToFile($caminhoCompleto);
-            
+        (new QRCode($options))->render($texto, $caminhoCompleto);
+        
+        return $nomeArquivo;
+    } catch (Exception $e) {
+        // Fallback para API online em caso de erro crítico local
+        $url = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($texto);
+        $qrImage = @file_get_contents($url);
+        
+        if ($qrImage !== false) {
+            file_put_contents($caminhoCompleto, $qrImage);
             return $nomeArquivo;
-        } catch (Exception $e) {
-            // Fallback para método alternativo
         }
     }
     
-    // Método alternativo: usar API online ou biblioteca simples
-    // Usando API do QR Server (gratuita, sem necessidade de biblioteca)
-    $url = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($texto);
-    $qrImage = file_get_contents($url);
-    
-    if ($qrImage !== false) {
-        file_put_contents($caminhoCompleto, $qrImage);
-        return $nomeArquivo;
-    }
-    
-    // Se tudo falhar, retornar null
     return null;
 }
 
 function obterCaminhoQRCode($nomeArquivo) {
     // Determinar o caminho base baseado na localização da página
-    $base_path = (strpos($_SERVER['PHP_SELF'], '/pages/') !== false) ? '../' : '';
+    $base_path = (strpos($_SERVER['PHP_SELF'] ?? '', '/pages/') !== false) ? '../' : '';
     return $base_path . 'qrcodes/' . $nomeArquivo;
 }
 ?>
-

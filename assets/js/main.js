@@ -1,5 +1,32 @@
 // Scripts JavaScript customizados
 
+// Validação de formulários do Bootstrap
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+
+// Validação customizada para quantidades
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.type === 'number' && e.target.name === 'quantidade') {
+        if (e.target.value <= 0) {
+            e.target.setCustomValidity('A quantidade deve ser maior que zero.');
+        } else {
+            e.target.setCustomValidity('');
+        }
+    }
+});
+
 // Auto-hide alerts após 5 segundos
 document.addEventListener('DOMContentLoaded', function() {
     const alerts = document.querySelectorAll('.alert');
