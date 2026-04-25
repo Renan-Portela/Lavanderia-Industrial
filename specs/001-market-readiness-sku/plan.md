@@ -10,26 +10,27 @@ Standardize laundry operations by introducing a Material Catalog with unique SKU
 ## Technical Context
 
 **Language/Version**: PHP 7.4+
-**Primary Dependencies**: Bootstrap 5, MySQLi, GD Extension
+**Primary Dependencies**: Bootstrap 5, MySQLi, GD Extension, `chillerlan/php-qrcode` (Offline)
 **Storage**: MySQL / MariaDB
-**Testing**: PHPUnit (as researched in Phase 0)
+**Testing**: PHPUnit
 **Target Platform**: Web (Apache/Nginx or PHP built-in server)
 **Project Type**: Structured PHP Web Application
 **Performance Goals**: Responsive UI (<1s load), Instant QR Code generation
 **Constraints**: Mobile-first design for laundry floor operations; No-framework PHP
 **Scale/Scope**: Industrial laundry operations
-**Authentication**: Simple session-based auth with bcrypt hashing
+**Authentication**: Simple session-based auth with `password_hash(PASSWORD_DEFAULT)` (bcrypt)
 **SKU Logic**: Hierarchical alphanumeric pattern `[CAT]-[MAT]-[SIZ]`
 **Architecture**: Service-oriented helpers in `src/` (managed by Composer)
+**Migration**: Existing items mapped to a new "Legacy" SKU to preserve history.
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- [x] **I. Digital Traceability**: Feature enhances tracking by standardizing materials via SKUs.
-- [x] **II. Process Integrity**: Standardized materials ensure consistent workflow data across Recebimento, Lavagem, and Expedição.
-- [x] **III. Structured Simplicity**: Implementation will use structured PHP as per project principles.
-- [x] **IV. Data Fidelity**: SKUs prevent data variation (e.g., "Luva" vs "Luvas") and improve reporting.
+- [x] **I. Digital Traceability**: Feature enhances tracking by standardizing materials via SKUs and offline QR generation.
+- [x] **II. Process Integrity**: Standardized materials and status transition rules ensure consistent workflow data.
+- [x] **III. Structured Simplicity**: Implementation uses structured PHP with PSR-4 autoloading for clarity.
+- [x] **IV. Data Fidelity**: SKUs and Legacy migration strategy prevent data variation and improve reporting.
 - [x] **V. Mobile-Responsive**: All new interfaces will use Bootstrap 5 and be optimized for mobile/tablet use.
 
 ## Project Structure
