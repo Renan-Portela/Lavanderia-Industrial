@@ -8,11 +8,13 @@ if (isset($_GET['exportar']) && $_GET['exportar'] == 'csv') {
     $filtro_status = $_GET['status'] ?? 'todos';
     $pedidos = [];
     
-    // Buscar pedidos com filtro
-    $sql = "SELECT * FROM pedidos WHERE 1=1";
+    // Buscar pedidos com filtro e join no material para SKU
+    $sql = "SELECT p.*, m.sku as material_sku FROM pedidos p 
+            LEFT JOIN materiais m ON p.material_id = m.id 
+            WHERE 1=1";
     
     if ($filtro_status != 'todos') {
-        $sql .= " AND status = ?";
+        $sql .= " AND p.status = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $filtro_status);
         $stmt->execute();
@@ -38,18 +40,18 @@ if (isset($_GET['exportar']) && $_GET['exportar'] == 'csv') {
     // BOM para UTF-8 (Excel)
     fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
     
-    // Cabeçalho (adicionando parâmetro $escape para evitar depreciação)
-    fputcsv($output, ['ID', 'Cliente', 'Tipo de Material', 'Quantidade', 'Status', 'Observação', 'Data de Cadastro'], ';', '"', '\\');
+    // Cabeçalho
+    fputcsv($output, ['ID', 'Cliente', 'SKU', 'Descrição', 'Quantidade', 'Status', 'Data de Cadastro'], ';', '"', '\\');
     
-    // Dados (adicionando parâmetro $escape para evitar depreciação)
+    // Dados
     foreach ($pedidos as $pedido) {
         fputcsv($output, [
             $pedido['id'],
             $pedido['cliente'],
+            $pedido['material_sku'] ?? 'N/A',
             $pedido['tipo_material'],
             $pedido['quantidade'],
             $pedido['status'],
-            $pedido['observacao'],
             date('d/m/Y H:i', strtotime($pedido['data_cadastro']))
         ], ';', '"', '\\');
     }
@@ -67,10 +69,12 @@ $filtro_status = $_GET['status'] ?? 'todos';
 $pedidos = [];
 
 // Buscar pedidos com filtro
-$sql = "SELECT * FROM pedidos WHERE 1=1";
+$sql = "SELECT p.*, m.sku as material_sku FROM pedidos p 
+        LEFT JOIN materiais m ON p.material_id = m.id 
+        WHERE 1=1";
 
 if ($filtro_status != 'todos') {
-    $sql .= " AND status = ?";
+    $sql .= " AND p.status = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $filtro_status);
     $stmt->execute();
@@ -110,9 +114,8 @@ if (isset($stmt)) {
                         <select class="form-select" id="status" name="status">
                             <option value="todos" <?php echo $filtro_status == 'todos' ? 'selected' : ''; ?>>Todos os Status</option>
                             <option value="Recebido" <?php echo $filtro_status == 'Recebido' ? 'selected' : ''; ?>>Recebido</option>
-                            <option value="Em Lavagem" <?php echo $filtro_status == 'Em Lavagem' ? 'selected' : ''; ?>>Em Lavagem</option>
-                            <option value="Pronto para Expedição" <?php echo $filtro_status == 'Pronto para Expedição' ? 'selected' : ''; ?>>Pronto para Expedição</option>
-                            <option value="Concluído" <?php echo $filtro_status == 'Concluído' ? 'selected' : ''; ?>>Concluído</option>
+                            <option value="Lavagem" <?php echo $filtro_status == 'Lavagem' ? 'selected' : ''; ?>>Lavagem</option>
+                            <option value="Expedido" <?php echo $filtro_status == 'Expedido' ? 'selected' : ''; ?>>Expedido</option>
                         </select>
                     </div>
                     <div class="col-md-8 d-flex align-items-end">
@@ -134,7 +137,7 @@ if (isset($stmt)) {
 
 <!-- Estatísticas Rápidas -->
 <div class="row mb-4">
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card text-center">
             <div class="card-body">
                 <h5 class="text-muted">Total de Pedidos</h5>
@@ -142,27 +145,19 @@ if (isset($stmt)) {
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card text-center">
             <div class="card-body">
-                <h5 class="text-muted">Recebidos</h5>
-                <h2 class="text-secondary"><?php echo count(array_filter($pedidos, fn($p) => $p['status'] == 'Recebido')); ?></h2>
+                <h5 class="text-muted">Em Processo (Lavagem)</h5>
+                <h2 class="text-warning"><?php echo count(array_filter($pedidos, fn($p) => $p['status'] == 'Lavagem')); ?></h2>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card text-center">
             <div class="card-body">
-                <h5 class="text-muted">Em Processo</h5>
-                <h2 class="text-warning"><?php echo count(array_filter($pedidos, fn($p) => in_array($p['status'], ['Em Lavagem', 'Pronto para Expedição']))); ?></h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="text-muted">Concluídos</h5>
-                <h2 class="text-success"><?php echo count(array_filter($pedidos, fn($p) => $p['status'] == 'Concluído')); ?></h2>
+                <h5 class="text-muted">Expedidos</h5>
+                <h2 class="text-success"><?php echo count(array_filter($pedidos, fn($p) => $p['status'] == 'Expedido')); ?></h2>
             </div>
         </div>
     </div>
@@ -184,10 +179,10 @@ if (isset($stmt)) {
                             <tr>
                                 <th>ID</th>
                                 <th>Cliente</th>
-                                <th>Tipo de Material</th>
+                                <th>SKU</th>
+                                <th>Descrição</th>
                                 <th>Quantidade</th>
                                 <th>Status</th>
-                                <th>Observações</th>
                                 <th>Data de Cadastro</th>
                             </tr>
                         </thead>
@@ -196,30 +191,20 @@ if (isset($stmt)) {
                                 $badge_class = '';
                                 switch($pedido['status']) {
                                     case 'Recebido': $badge_class = 'bg-secondary'; break;
-                                    case 'Em Lavagem': $badge_class = 'bg-warning text-dark'; break;
-                                    case 'Pronto para Expedição': $badge_class = 'bg-info'; break;
-                                    case 'Concluído': $badge_class = 'bg-success'; break;
+                                    case 'Lavagem': $badge_class = 'bg-warning text-dark'; break;
+                                    case 'Expedido': $badge_class = 'bg-success'; break;
                                 }
                             ?>
                             <tr>
                                 <td><strong>#<?php echo $pedido['id']; ?></strong></td>
                                 <td><?php echo htmlspecialchars($pedido['cliente']); ?></td>
+                                <td><code><?php echo htmlspecialchars($pedido['material_sku'] ?? 'N/A'); ?></code></td>
                                 <td><?php echo htmlspecialchars($pedido['tipo_material']); ?></td>
                                 <td><?php echo $pedido['quantidade']; ?></td>
                                 <td>
                                     <span class="badge <?php echo $badge_class; ?>">
                                         <?php echo $pedido['status']; ?>
                                     </span>
-                                </td>
-                                <td>
-                                    <?php 
-                                    if ($pedido['observacao']) {
-                                        echo htmlspecialchars(substr($pedido['observacao'], 0, 50));
-                                        if (strlen($pedido['observacao']) > 50) echo '...';
-                                    } else {
-                                        echo '<span class="text-muted">-</span>';
-                                    }
-                                    ?>
                                 </td>
                                 <td><?php echo date('d/m/Y H:i', strtotime($pedido['data_cadastro'])); ?></td>
                             </tr>
@@ -238,7 +223,5 @@ if (isset($stmt)) {
 </div>
 
 <?php
-$conn->close();
 require_once __DIR__ . '/../includes/footer.php';
 ?>
-

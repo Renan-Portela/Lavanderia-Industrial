@@ -20,6 +20,10 @@ class OrderService {
         return in_array($next, self::$transitions[$current]);
     }
 
+    public static function validateHybridData($data) {
+        return !empty($data['material_id']) && !empty(trim($data['tipo_material'] ?? ''));
+    }
+
     public static function updateStatus($id, $nextStatus) {
         $order = self::getById($id);
         if (!$order) return false;

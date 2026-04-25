@@ -3,6 +3,7 @@ $pageTitle = "Recebimento";
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/qrcode_helper.php';
 require_once __DIR__ . '/../includes/material_service.php';
+require_once __DIR__ . '/../includes/order_service.php';
 
 $mensagem = '';
 $tipo_mensagem = '';
@@ -15,18 +16,20 @@ $materiais_catalogo = MaterialService::getAll();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $cliente = trim($_POST['cliente'] ?? '');
     $material_id = intval($_POST['material_id'] ?? 0);
+    $tipo_material = trim($_POST['tipo_material'] ?? '');
     $quantidade = intval($_POST['quantidade'] ?? 0);
     $observacao = trim($_POST['observacao'] ?? '');
     
-    if (empty($cliente) || $material_id <= 0 || $quantidade <= 0) {
+    $formData = [
+        'material_id' => $material_id,
+        'tipo_material' => $tipo_material
+    ];
+
+    if (empty($cliente) || !OrderService::validateHybridData($formData) || $quantidade <= 0) {
         $mensagem = 'Por favor, preencha todos os campos obrigatórios.';
         $tipo_mensagem = 'danger';
     } else {
-        // Buscar info do material para manter tipo_material (legado) se necessário
-        $material_info = MaterialService::getById($material_id);
-        $tipo_material = $material_info['nome'];
-
-        // Inserir pedido usando material_id
+        // Inserir pedido usando material_id e a descrição específica
         $sql = "INSERT INTO pedidos (cliente, material_id, tipo_material, quantidade, observacao, status) VALUES (?, ?, ?, ?, ?, 'Recebido')";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("sisss", $cliente, $material_id, $tipo_material, $quantidade, $observacao);
@@ -103,7 +106,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <td><?php echo htmlspecialchars($pedido_criado['cliente']); ?></td>
                             </tr>
                             <tr>
-                                <th>Material:</th>
+                                <th>Descrição:</th>
+                                <td><?php echo htmlspecialchars($pedido_criado['tipo_material']); ?></td>
+                            </tr>
+                            <tr>
+                                <th>SKU Categoria:</th>
                                 <td>
                                     <strong><?php echo htmlspecialchars($pedido_criado['material_nome']); ?></strong>
                                     <br><small class="text-muted">SKU: <?php echo $pedido_criado['material_sku']; ?></small>
@@ -160,18 +167,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="invalid-feedback">Por favor, informe o cliente.</div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="material_id" class="form-label">Material do Catálogo <span class="text-danger">*</span></label>
-                        <select class="form-select" id="material_id" name="material_id" required>
-                            <option value="" selected disabled>Selecione um item do catálogo...</option>
-                            <?php foreach ($materiais_catalogo as $m): ?>
-                                <option value="<?php echo $m['id']; ?>" <?php echo (isset($_POST['material_id']) && $_POST['material_id'] == $m['id']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($m['nome']); ?> (<?php echo $m['sku']; ?>)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <div class="invalid-feedback">Por favor, selecione um material.</div>
-                        <div class="form-text">Somente itens cadastrados no catálogo podem ser recebidos.</div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="material_id" class="form-label">SKU Categoria <span class="text-danger">*</span></label>
+                            <select class="form-select" id="material_id" name="material_id" required>
+                                <option value="" selected disabled>Selecione um SKU...</option>
+                                <?php foreach ($materiais_catalogo as $m): ?>
+                                    <option value="<?php echo $m['id']; ?>" <?php echo (isset($_POST['material_id']) && $_POST['material_id'] == $m['id']) ? 'selected' : ''; ?>>
+                                        <?php echo $m['sku']; ?> (<?php echo htmlspecialchars($m['nome']); ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="invalid-feedback">Selecione uma categoria SKU.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="tipo_material" class="form-label">Descrição do Material <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="tipo_material" name="tipo_material" required 
+                                   placeholder="Ex: Luva Nitrílica Verde" value="<?php echo isset($_POST['tipo_material']) ? htmlspecialchars($_POST['tipo_material']) : ''; ?>">
+                            <div class="invalid-feedback">Informe a descrição do item.</div>
+                        </div>
                     </div>
                     
                     <div class="mb-3">

@@ -18,6 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $pedido = OrderService::getByQRCode($codigo_qr);
         
         if ($pedido) {
+            // Buscar SKU do catálogo
+            require_once __DIR__ . '/../includes/material_service.php';
+            $material = MaterialService::getById($pedido['material_id']);
+            $pedido['material_sku'] = $material['sku'] ?? 'N/A';
+            
             if ($pedido['status'] == 'Recebido') {
                 if (OrderService::updateStatus($pedido['id'], 'Lavagem')) {
                     $pedido['status'] = 'Lavagem';
@@ -98,7 +103,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <td><?php echo htmlspecialchars($pedido['cliente']); ?></td>
                     </tr>
                     <tr>
-                        <th>Material:</th>
+                        <th>SKU Categoria:</th>
+                        <td><code class="fw-bold"><?php echo htmlspecialchars($pedido['material_sku']); ?></code></td>
+                    </tr>
+                    <tr>
+                        <th>Descrição:</th>
                         <td><?php echo htmlspecialchars($pedido['tipo_material']); ?></td>
                     </tr>
                     <tr>
@@ -126,18 +135,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             <div class="card-body">
                 <?php
-                $sql = "SELECT * FROM pedidos WHERE status = 'Lavagem' ORDER BY data_cadastro DESC";
+                $sql = "SELECT p.*, m.sku as material_sku FROM pedidos p 
+                        LEFT JOIN materiais m ON p.material_id = m.id 
+                        WHERE p.status = 'Lavagem' ORDER BY p.data_cadastro DESC";
                 $result = $conn->query($sql);
                 
                 if ($result && $result->num_rows > 0) {
                     echo '<div class="table-responsive">';
                     echo '<table class="table table-hover">';
-                    echo '<thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Quantidade</th><th>Data</th></tr></thead>';
+                    echo '<thead><tr><th>ID</th><th>Cliente</th><th>SKU</th><th>Descrição</th><th>Quantidade</th><th>Data</th></tr></thead>';
                     echo '<tbody>';
                     while ($row = $result->fetch_assoc()) {
                         echo '<tr>';
                         echo '<td>#' . $row['id'] . '</td>';
                         echo '<td>' . htmlspecialchars($row['cliente']) . '</td>';
+                        echo '<td><code>' . htmlspecialchars($row['material_sku']) . '</code></td>';
                         echo '<td>' . htmlspecialchars($row['tipo_material']) . '</td>';
                         echo '<td>' . $row['quantidade'] . '</td>';
                         echo '<td>' . date('d/m/Y H:i', strtotime($row['data_cadastro'])) . '</td>';

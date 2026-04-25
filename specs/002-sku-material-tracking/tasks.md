@@ -11,38 +11,38 @@ Implement a hybrid tracking system that combines standardized SKU categorization
 ## Phase 1: Setup
 Initialization of the feature context and testing harness.
 
-- [ ] T001 Initialize PHPUnit test case for hybrid tracking in `tests/HybridTrackingTest.php`
+- [x] T001 Initialize PHPUnit test case for hybrid tracking in `tests/HybridTrackingTest.php`
 
 ## Phase 2: Foundational
 Blocking prerequisites for core user stories.
 
-- [ ] T002 Update `includes/order_service.php` with data validation for hybrid fields (SKU + Name)
+- [x] T002 Update `includes/order_service.php` with data validation for hybrid fields (SKU + Name)
 
 ## Phase 3: [US1] Hybrid Material Entry (P1)
 Requirement: Select SKU from catalog and provide a free-text descriptive name.
 
-- [ ] T003 [P] [US1] Add "Descrição do Material" text input to receiving form in `pages/recebimento.php`
-- [ ] T004 [US1] Update POST processing in `pages/recebimento.php` to save user-provided description into `tipo_material`
-- [ ] T005 [US1] Implement automated test for hybrid order persistence in `tests/HybridTrackingTest.php`
+- [x] T003 [P] [US1] Add "Descrição do Material" text input to receiving form in `pages/recebimento.php`
+- [x] T004 [US1] Update POST processing in `pages/recebimento.php` to save user-provided description into `tipo_material`
+- [x] T005 [US1] Implement automated test for hybrid order persistence in `tests/HybridTrackingTest.php`
 
 ## Phase 4: [US2] Continuity of QR Tracking (P1)
 Requirement: Maintain QR workflow while displaying enriched hybrid data.
 
-- [ ] T006 [P] [US2] Update operational detail view in `pages/lavagem.php` to display SKU and Description
-- [ ] T007 [P] [US2] Update operational detail view in `pages/expedicao.php` to display SKU and Description
-- [ ] T008 [US2] Verify QR scanning correctly identifies and displays hybrid data on the laundry floor
+- [x] T006 [P] [US2] Update operational detail view in `pages/lavagem.php` to display SKU and Description
+- [x] T007 [P] [US2] Update operational detail view in `pages/expedicao.php` to display SKU and Description
+- [x] T008 [US2] Verify QR scanning correctly identifies and displays hybrid data on the laundry floor
 
 ## Phase 5: [US3] Market Readiness Infrastructure (P2)
 Requirement: Security, clean code, and test coverage.
 
-- [ ] T009 [US3] Refactor data access in reports to use the new hybrid model in `pages/relatorios.php`
-- [ ] T010 [US3] Finalize test suite coverage for SKU/Material data fidelity
+- [x] T009 [US3] Refactor data access in reports to use the new hybrid model in `pages/relatorios.php`
+- [x] T010 [US3] Finalize test suite coverage for SKU/Material data fidelity
 
 ## Final Phase: Polish & Cross-Cutting
 Cleanup and mobile optimization.
 
-- [ ] T011 [P] Optimize hybrid input form for mobile touch targets in `assets/css/style.css`
-- [ ] T012 Perform end-to-end verification of the hybrid receiving and tracking workflow
+- [x] T011 [P] Optimize hybrid input form for mobile touch targets in `assets/css/style.css`
+- [x] T012 Perform end-to-end verification of the hybrid receiving and tracking workflow
 
 ## Dependencies
 1. [US1] depends on Phase 2 validation logic.
