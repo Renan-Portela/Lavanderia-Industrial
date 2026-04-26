@@ -67,3 +67,11 @@ function copiarCodigoQR(codigo) {
         alert('Código copiado: ' + codigo);
     });
 }
+
+// Inicialização de Tooltips do Bootstrap
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+});

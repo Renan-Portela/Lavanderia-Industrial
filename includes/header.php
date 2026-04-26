@@ -6,8 +6,9 @@ require_once __DIR__ . '/../conexao.php';
 // Inicializar banco de dados (Migrações automáticas se necessário)
 $conn = inicializarDB();
 
-// Proteção global: Redirecionar se não estiver logado (exceto página de login)
-if (basename($_SERVER['PHP_SELF']) !== 'login.php') {
+// Proteção global: Redirecionar se não estiver logado (exceto página de login e index.php)
+$public_pages = ['login.php', 'index.php'];
+if (!in_array(basename($_SERVER['PHP_SELF']), $public_pages)) {
     SessionManager::requireLogin();
 }
 
@@ -42,6 +43,8 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/pages/') !== false) ? '../' : '';
             <a class="navbar-brand" href="<?php echo $base_path; ?>index.php">
                 <i class="bi bi-house-door-fill"></i> <?php echo SITE_NAME; ?>
             </a>
+            
+            <?php if (SessionManager::isLoggedIn()): ?>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -100,6 +103,13 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/pages/') !== false) ? '../' : '';
                     </li>
                 </ul>
             </div>
+            <?php else: ?>
+            <div class="ms-auto">
+                <a href="<?php echo $base_path; ?>pages/login.php" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+            </div>
+            <?php endif; ?>
         </div>
     </nav>
 
