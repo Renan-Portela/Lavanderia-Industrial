@@ -60,11 +60,28 @@ function imprimirQRCode() {
     window.print();
 }
 
-// Função para copiar código QR
-function copiarCodigoQR(codigo) {
-    navigator.clipboard.writeText(codigo).then(function() {
-        // Usar toast customizado se disponível futuramente, por enquanto alert nativo
-        alert('Código copiado: ' + codigo);
+// Função para copiar código para o clipboard
+function copiarCodigo(texto) {
+    if (!navigator.clipboard) {
+        // Fallback para navegadores antigos
+        var textArea = document.createElement("textarea");
+        textArea.value = texto;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            alert('Código copiado: ' + texto);
+        } catch (err) {
+            console.error('Erro ao copiar', err);
+        }
+        document.body.removeChild(textArea);
+        return;
+    }
+    
+    navigator.clipboard.writeText(texto).then(function() {
+        alert('Código copiado: ' + texto);
+    }, function(err) {
+        console.error('Erro ao copiar: ', err);
     });
 }
 

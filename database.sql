@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS pedidos (
     material_id INT,
     cliente VARCHAR(100) NOT NULL,
     tipo_material VARCHAR(100) NOT NULL, -- Mantido para compatibilidade legado, será migrado
-    quantidade INT NOT NULL,
+    quantidade DECIMAL(10,2) NOT NULL,
+    unidade ENUM('UN', 'KG') NOT NULL DEFAULT 'UN',
     observacao TEXT,
     status ENUM('Recebido', 'Lavagem', 'Expedido') NOT NULL DEFAULT 'Recebido',
     codigo_qr VARCHAR(255),

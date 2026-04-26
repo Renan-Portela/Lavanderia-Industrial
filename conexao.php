@@ -82,7 +82,8 @@ function inicializarDB() {
         material_id INT,
         cliente VARCHAR(100) NOT NULL,
         tipo_material VARCHAR(100) NOT NULL,
-        quantidade INT NOT NULL,
+        quantidade DECIMAL(10,2) NOT NULL,
+        unidade ENUM('UN', 'KG') NOT NULL DEFAULT 'UN',
         observacao TEXT,
         status ENUM('Recebido', 'Lavagem', 'Expedido') NOT NULL DEFAULT 'Recebido',
         codigo_qr VARCHAR(255),
@@ -91,6 +92,13 @@ function inicializarDB() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
     $conn->query($sql);
     
+    // Migração: Alterar quantidade para DECIMAL e adicionar unidade
+    $result = $conn->query("SHOW COLUMNS FROM pedidos LIKE 'unidade'");
+    if ($result->num_rows == 0) {
+        $conn->query("ALTER TABLE pedidos MODIFY COLUMN quantidade DECIMAL(10,2) NOT NULL");
+        $conn->query("ALTER TABLE pedidos ADD COLUMN unidade ENUM('UN', 'KG') NOT NULL DEFAULT 'UN' AFTER quantidade");
+    }
+
     // Garantir que material_id existe (para bases legadas)
     $result = $conn->query("SHOW COLUMNS FROM pedidos LIKE 'material_id'");
     if ($result->num_rows == 0) {

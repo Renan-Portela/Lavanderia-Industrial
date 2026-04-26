@@ -9,7 +9,7 @@ if (isset($_GET['exportar']) && $_GET['exportar'] == 'csv') {
     $pedidos = [];
     
     // Buscar pedidos com filtro e join no material para SKU
-    $sql = "SELECT p.*, m.sku as material_sku FROM pedidos p 
+    $sql = "SELECT p.*, m.sku as material_sku, m.nome as material_nome FROM pedidos p 
             LEFT JOIN materiais m ON p.material_id = m.id 
             WHERE 1=1";
     
@@ -41,7 +41,7 @@ if (isset($_GET['exportar']) && $_GET['exportar'] == 'csv') {
     fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
     
     // Cabeçalho
-    fputcsv($output, ['ID', 'Cliente', 'SKU', 'Descrição', 'Quantidade', 'Status', 'Data de Cadastro'], ';', '"', '\\');
+    fputcsv($output, ['ID', 'Cliente', 'SKU', 'Categoria', 'Descrição Extra', 'Quantidade', 'Unidade', 'Status', 'Data de Cadastro'], ';', '"', '\\');
     
     // Dados
     foreach ($pedidos as $pedido) {
@@ -49,8 +49,10 @@ if (isset($_GET['exportar']) && $_GET['exportar'] == 'csv') {
             $pedido['id'],
             $pedido['cliente'],
             $pedido['material_sku'] ?? 'N/A',
+            $pedido['material_nome'] ?? 'N/A',
             $pedido['tipo_material'],
-            $pedido['quantidade'],
+            str_replace('.', ',', $pedido['quantidade']),
+            $pedido['unidade'],
             $pedido['status'],
             date('d/m/Y H:i', strtotime($pedido['data_cadastro']))
         ], ';', '"', '\\');
@@ -69,7 +71,7 @@ $filtro_status = $_GET['status'] ?? 'todos';
 $pedidos = [];
 
 // Buscar pedidos com filtro
-$sql = "SELECT p.*, m.sku as material_sku FROM pedidos p 
+$sql = "SELECT p.*, m.sku as material_sku, m.nome as material_nome FROM pedidos p 
         LEFT JOIN materiais m ON p.material_id = m.id 
         WHERE 1=1";
 
@@ -179,8 +181,7 @@ if (isset($stmt)) {
                             <tr>
                                 <th>ID</th>
                                 <th>Cliente</th>
-                                <th>SKU</th>
-                                <th>Descrição</th>
+                                <th>Categoria</th>
                                 <th>Quantidade</th>
                                 <th>Status</th>
                                 <th>Data de Cadastro</th>
@@ -194,13 +195,17 @@ if (isset($stmt)) {
                                     case 'Lavagem': $badge_class = 'bg-warning text-dark'; break;
                                     case 'Expedido': $badge_class = 'bg-success'; break;
                                 }
+                                $display_cat = ($pedido['material_sku'] ? $pedido['material_sku'] . ' - ' : '') . ($pedido['material_nome'] ?? 'Sem Categoria');
                             ?>
                             <tr>
-                                <td><strong>#<?php echo $pedido['id']; ?></strong></td>
+                                <td>
+                                    <span class="copyable-code fw-bold" onclick="copiarCodigo('PEDIDO-<?php echo $pedido['id']; ?>')" title="Clique para copiar">
+                                        #<?php echo $pedido['id']; ?>
+                                    </span>
+                                </td>
                                 <td><?php echo htmlspecialchars($pedido['cliente']); ?></td>
-                                <td><code><?php echo htmlspecialchars($pedido['material_sku'] ?? 'N/A'); ?></code></td>
-                                <td><?php echo htmlspecialchars($pedido['tipo_material']); ?></td>
-                                <td><?php echo $pedido['quantidade']; ?></td>
+                                <td><?php echo htmlspecialchars($display_cat); ?></td>
+                                <td><strong><?php echo number_format($pedido['quantidade'], 2, ',', '.'); ?> <?php echo $pedido['unidade']; ?></strong></td>
                                 <td>
                                     <span class="badge <?php echo $badge_class; ?>">
                                         <?php echo $pedido['status']; ?>
@@ -213,15 +218,21 @@ if (isset($stmt)) {
                     </table>
                 </div>
                 <?php else: ?>
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> Nenhum pedido encontrado com os filtros selecionados.
-                </div>
+                    <p class="text-center text-muted py-4">Nenhum pedido encontrado com os filtros selecionados.</p>
                 <?php endif; ?>
             </div>
         </div>
     </div>
 </div>
 
-<?php
-require_once __DIR__ . '/../includes/footer.php';
-?>
+<script>
+function copiarCodigo(texto) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(texto).then(() => {
+            alert('Código ' + texto + ' copiado!');
+        });
+    }
+}
+</script>
+
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

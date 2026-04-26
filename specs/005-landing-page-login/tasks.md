@@ -18,11 +18,11 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 [P] Ensure session constants and `SessionManager` are available via `includes/auth_helper.php`
+- [x] T001 [P] Ensure session constants and `SessionManager` are available via `includes/auth_helper.php`
 
 ## Phase 2: Foundational
 
-- [ ] T002 [P] Add landing page section styles to `assets/css/style.css` (Hero, Service Cards, Login Button)
+- [x] T002 [P] Add landing page section styles to `assets/css/style.css` (Hero, Service Cards, Login Button)
 
 ## Phase 3: User Story 1 - Public visitor accesses the site (Priority: P1)
 
@@ -34,11 +34,11 @@ Open root URL in incognito window; verify landing page with services (Recebiment
 
 ### Implementation
 
-- [ ] T003 [US1] Wrap existing dashboard logic in `index.php` with `if (SessionManager::isLoggedIn()):` check
-- [ ] T004 [US1] Implement landing page HTML structure in `index.php` (else block) using Bootstrap 5 grid
-- [ ] T005 [US1] Add service overview sections (Recebimento, Lavagem, Expedição) to landing page in `index.php`
-- [ ] T006 [US1] Implement "Entrar" button in landing page section of `index.php` pointing to `pages/login.php`
-- [ ] T007 [US1] Update `includes/header.php` to hide operational navigation links when user is not logged in
+- [x] T003 [US1] Wrap existing dashboard logic in `index.php` with `if (SessionManager::isLoggedIn()):` check
+- [x] T004 [US1] Implement landing page HTML structure in `index.php` (else block) using Bootstrap 5 grid
+- [x] T005 [US1] Add service overview sections (Recebimento, Lavagem, Expedição) to landing page in `index.php`
+- [x] T006 [US1] Implement "Entrar" button in landing page section of `index.php` pointing to `pages/login.php`
+- [x] T007 [US1] Update `includes/header.php` to hide operational navigation links when user is not logged in
 
 **Checkpoint**: User Story 1 functional and verified.
 
@@ -52,16 +52,16 @@ Click "Entrar" on landing page; verify redirection to `pages/login.php` and succ
 
 ### Implementation
 
-- [ ] T008 [US2] Verify `pages/login.php` redirects to `index.php` (Dashboard view) upon successful authentication
-- [ ] T009 [US2] Ensure standard site branding (icon + SITE_NAME) is visible and consistent on landing page
+- [x] T008 [US2] Verify `pages/login.php` redirects to `index.php` (Dashboard view) upon successful authentication
+- [x] T009 [US2] Ensure standard site branding (icon + SITE_NAME) is visible and consistent on landing page
 
 **Checkpoint**: User Story 2 functional and verified.
 
 ## Phase 5: Polish & Cross-cutting Concerns
 
-- [ ] T010 [P] Verify Bootstrap 5 responsiveness for landing page on mobile and tablet devices
-- [ ] T011 [P] Verify landing page load performance (target <1.5s)
-- [ ] T012 Remove any temporary debugging code or placeholders
+- [x] T010 [P] Verify Bootstrap 5 responsiveness for landing page on mobile and tablet devices
+- [x] T011 [P] Verify landing page load performance (target <1.5s)
+- [x] T012 Remove any temporary debugging code or placeholders
 
 ## Dependencies
 - US1 (Public Landing Page) must be implemented to provide the button for US2.

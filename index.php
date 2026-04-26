@@ -91,7 +91,9 @@ if (SessionManager::isLoggedIn()):
             </div>
             <div class="card-body">
                 <?php
-                $sql_recentes = "SELECT * FROM pedidos ORDER BY data_cadastro DESC LIMIT 10";
+                $sql_recentes = "SELECT p.*, m.nome as material_nome FROM pedidos p 
+                                LEFT JOIN materiais m ON p.material_id = m.id 
+                                ORDER BY p.data_cadastro DESC LIMIT 10";
                 $result_recentes = $conn->query($sql_recentes);
                 
                 if ($result_recentes->num_rows > 0) {
@@ -115,7 +117,6 @@ if (SessionManager::isLoggedIn()):
                             case 'Recebido': 
                                 $badge_class = 'bg-secondary'; 
                                 $progress_pct = 33;
-                                $progress_color = 'bg-secondary';
                                 break;
                             case 'Em Lavagem': 
                                 $badge_class = 'bg-warning'; 
@@ -134,15 +135,23 @@ if (SessionManager::isLoggedIn()):
                                 break;
                         }
                         
+                        $display_material = $row['material_nome'] ?? $row['tipo_material'];
+                        if (empty($display_material)) $display_material = "N/A";
+
                         echo '<tr>';
-                        echo '<td><strong>#' . $row['id'] . '</strong></td>';
+                        echo '<td>
+                                <span class="copyable-code fw-bold" onclick="copiarCodigo(\'PEDIDO-' . $row['id'] . '\')" title="Clique para copiar">
+                                    #' . $row['id'] . '
+                                </span>
+                              </td>';
                         echo '<td>' . htmlspecialchars($row['cliente']) . '</td>';
-                        echo '<td>' . htmlspecialchars($row['tipo_material']) . '</td>';
+                        echo '<td>' . htmlspecialchars($display_material) . '</td>';
                         echo '<td><span class="badge ' . $badge_class . '">' . $row['status'] . '</span></td>';
                         echo '<td>
                                 <div class="progress" style="height: 8px;" title="' . $progress_pct . '% concluído">
                                     <div class="progress-bar ' . $progress_color . '" role="progressbar" style="width: ' . $progress_pct . '%" aria-valuenow="' . $progress_pct . '" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
+                                <small class="text-muted">' . number_format($row['quantidade'], 2, ',', '.') . ' ' . $row['unidade'] . '</small>
                               </td>';
                         echo '<td>' . date('d/m/Y H:i', strtotime($row['data_cadastro'])) . '</td>';
                         echo '</tr>';
@@ -157,6 +166,16 @@ if (SessionManager::isLoggedIn()):
         </div>
     </div>
 </div>
+
+<script>
+function copiarCodigo(texto) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(texto).then(() => {
+            alert('Código ' + texto + ' copiado!');
+        });
+    }
+}
+</script>
 
 <?php
     $conn->close();

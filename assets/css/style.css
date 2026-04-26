@@ -512,3 +512,74 @@ body {
     height: 100%;
     transition: width 0.6s ease;
 }
+
+/* Enhanced Order Receiving - Phase 2 */
+.unit-selection-group {
+    display: flex;
+    gap: 0;
+    width: 100%;
+}
+
+.unit-selection-group .btn-check + .btn {
+    flex: 1;
+    border-radius: 0;
+}
+
+.unit-selection-group .btn-check:first-child + .btn {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.unit-selection-group .btn-check:last-child + .btn {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+/* Clipboard Copy Styling */
+.copyable-code {
+    cursor: copy;
+    transition: background 0.2s;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.copyable-code:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+/* Media Print Optimization */
+@media print {
+    .no-print, .navbar, footer, .btn, .breadcrumb, .alert {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .container-fluid {
+        width: 100% !important;
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .print-only {
+        display: block !important;
+    }
+    
+    .label-container {
+        width: 100mm;
+        height: auto;
+        padding: 5mm;
+        border: 1px solid #ccc;
+        margin: 0 auto;
+        text-align: center;
+    }
+}
+
+.print-only {
+    display: none;
+}

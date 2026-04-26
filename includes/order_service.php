@@ -21,7 +21,7 @@ class OrderService {
     }
 
     public static function validateHybridData($data) {
-        return !empty($data['material_id']) && !empty(trim($data['tipo_material'] ?? ''));
+        return !empty($data['material_id']);
     }
 
     public static function updateStatus($id, $nextStatus) {
