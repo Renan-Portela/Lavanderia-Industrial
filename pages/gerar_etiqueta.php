@@ -4,14 +4,19 @@ require_once __DIR__ . '/../includes/session_helper.php';
 require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/../includes/qrcode_helper.php';
 
-SessionManager::requireLogin();
+SessionManager::init();
+
+if (!SessionManager::isLoggedIn()) {
+    die("Erro: Sessão encerrada.");
+}
 
 $id = intval($_GET['id'] ?? 0);
 if (!$id) {
-    die("ID do pedido inválido.");
+    die("Erro: ID do pedido inválido.");
 }
 
-// Buscar dados do pedido
+$conn = inicializarDB();
+
 $sql = "SELECT p.*, m.nome as material_nome, m.sku as material_sku 
         FROM pedidos p 
         LEFT JOIN materiais m ON p.material_id = m.id 
@@ -23,183 +28,194 @@ $result = $stmt->get_result();
 $pedido = $result->fetch_assoc();
 
 if (!$pedido) {
-    die("Pedido não encontrado.");
+    die("Erro: Pedido não encontrado.");
 }
 
-$unit_display = strtolower($pedido['unidade'] ?? 'un');
+$unit_display = htmlspecialchars(strtolower($pedido['unidade'] ?? 'un'));
 if ($unit_display === 'un') $unit_display = 'und.';
 $formatted_qty = number_format($pedido['quantidade'], 2, ',', '.') . ' ' . $unit_display;
-$display_material = $pedido['material_nome'] ?? $pedido['tipo_material'];
+$display_material = htmlspecialchars($pedido['material_nome'] ?? $pedido['tipo_material']);
 if (empty($display_material)) $display_material = "N/A";
 
+$qr_path = obterCaminhoQRCode($pedido['codigo_qr']);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Etiqueta Pedido #<?php echo $id; ?></title>
+    <title>Etiqueta #<?php echo $id; ?> - LuvaSul</title>
+    <!-- Bootstrap 5 CSS para os controles na tela -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        /* Base styles for screen preview */
+        /* Estilos de Visualização (Padrão LuvaSul) */
         body { 
-            background: #f0f0f0; 
-            margin: 0; 
-            padding: 20px; 
-            font-family: Arial, Helvetica, sans-serif;
-            color: #000;
-        }
-        
-        .no-print {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .btn {
-            background: #000;
-            color: #fff;
-            border: 1px solid #000;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        /* Label Container - 100mm x 50mm strict */
-        .label-container {
-            width: 96mm; /* slightly less than 100mm to account for padding/borders safely */
-            height: 46mm; /* slightly less than 50mm */
-            background: #fff;
-            padding: 2mm;
-            margin: 0 auto;
-            box-sizing: border-box;
-            border: 1px solid #ccc; /* Visible on screen */
+            background: #f8f9fa; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            page-break-inside: avoid;
+            align-items: center;
         }
 
-        .label-header {
+        .no-print {
+            width: 100%;
+            background: #fff;
+            padding: 20px;
             text-align: center;
-            border-bottom: 1px solid #000;
-            margin-bottom: 1mm;
-            padding-bottom: 1mm;
-            flex-shrink: 0;
-        }
-        
-        .label-header h1 { 
-            margin: 0; 
-            font-size: 14pt; 
-            font-weight: 900;
-            text-transform: uppercase;
+            border-bottom: 3px solid #0d6efd;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
         }
 
-        .label-body { 
-            display: flex; 
-            flex-direction: row;
-            align-items: stretch;
-            flex-grow: 1;
-            gap: 2mm;
+        .label-preview-title {
+            color: #0d6efd;
+            font-weight: bold;
+            margin-bottom: 15px;
         }
 
-        .label-details { 
+        /* Container da Etiqueta - 100mm x 50mm */
+        .label-container {
+            width: 100mm;
+            height: 50mm;
+            background: #fff;
+            border: 1px solid #000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex;
+            padding: 4mm;
+            box-sizing: border-box;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            border-radius: 4px;
+        }
+
+        .details { 
             flex: 1; 
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: center;
+            color: #000;
         }
 
-        .label-details p {
-            margin: 0 0 1mm 0;
-            font-size: 9pt;
-            line-height: 1.2;
-            word-break: break-word;
-        }
-        
-        .label-details p.large-id {
-            font-size: 14pt;
-            font-weight: 900;
-            margin-bottom: 2mm;
-        }
-
-        .label-details strong {
-            font-weight: bold;
-        }
-
-        .label-qr { 
+        .qr-section { 
             width: 35mm;
-            flex-shrink: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-        }
-        
-        .label-qr img { 
-            width: 100%; 
-            height: auto;
-            max-height: 35mm;
-            object-fit: contain;
-            image-rendering: pixelated; /* Optimize for thermal */
+            border-left: 1px dashed #ddd;
+            padding-left: 2mm;
         }
 
-        /* Print Media Queries */
+        .qr-section img { 
+            width: 100%; 
+            height: auto;
+            image-rendering: pixelated;
+        }
+
+        h1 { 
+            font-size: 14pt; 
+            font-weight: 800;
+            margin: 0 0 2px 0; 
+            border-bottom: 2px solid #000;
+            text-transform: uppercase;
+        }
+
+        .order-id { 
+            font-size: 16pt; 
+            font-weight: 900; 
+            margin: 2px 0 6px 0;
+        }
+
+        p { font-size: 10pt; line-height: 1.2; margin: 1px 0; }
+        .obs-box { 
+            font-size: 8pt; 
+            border-top: 1px dashed #000; 
+            margin-top: 3px; 
+            padding-top: 2px;
+            font-style: italic;
+        }
+
+        /* CONFIGURAÇÃO DE IMPRESSÃO (Rigorosa para Etiqueta) */
         @media print {
-            @page {
-                size: 100mm 50mm;
-                margin: 0;
+            @page { 
+                size: 100mm 50mm; 
+                margin: 0; 
             }
-            body { 
-                background: #fff !important; 
-                margin: 0 !important; 
-                padding: 0 !important; 
+            
+            html, body {
+                width: 100mm;
+                height: 50mm;
+                background: #fff !important;
+                overflow: hidden;
             }
-            .no-print { 
-                display: none !important; 
-            }
+
+            .no-print { display: none !important; }
+
             .label-container { 
-                border: none !important; /* Remove screen border */
-                margin: 0 !important;
                 width: 100mm !important;
                 height: 50mm !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 4mm !important;
                 box-shadow: none !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                border-radius: 0;
             }
-            /* Force pure black and white */
-            * {
-                color: #000 !important;
-                background-color: transparent !important;
-                box-shadow: none !important;
-                text-shadow: none !important;
-            }
+            
+            .qr-section { border-left: none; }
         }
     </style>
 </head>
-<body onload="window.print()">
+<body>
     <div class="no-print">
-        <button onclick="window.print()" class="btn">Imprimir Etiqueta</button>
-        <button onclick="window.close()" class="btn" style="background:#fff; color:#000; margin-left:10px;">Fechar Janela</button>
+        <h3 class="label-preview-title"><i class="bi bi-printer-fill"></i> Pré-visualização de Impressão</h3>
+        <div class="alert alert-light border d-inline-block py-2 px-4 mb-3">
+            <i class="bi bi-info-circle text-primary"></i> A etiqueta será impressa em papel <strong>100x50mm</strong>.
+        </div>
+        <br>
+        <button onclick="window.print()" class="btn btn-primary btn-lg px-5 shadow-sm">
+            <i class="bi bi-printer"></i> IMPRIMIR ETIQUETA
+        </button>
+        <button onclick="window.close()" class="btn btn-outline-secondary btn-lg ms-2">
+            FECHAR
+        </button>
     </div>
 
+    <!-- Estrutura da Etiqueta -->
     <div class="label-container">
-        <div class="label-header">
+        <div class="details">
             <h1><?php echo SITE_NAME; ?></h1>
+            <div class="order-id">PEDIDO #<?php echo $pedido['id']; ?></div>
+            <p><strong>CLIENTE:</strong> <?php echo htmlspecialchars($pedido['cliente']); ?></p>
+            <p><strong>MATERIAL:</strong> <?php echo htmlspecialchars($display_material); ?></p>
+            <p><strong>QUANTIDADE:</strong> <?php echo $formatted_qty; ?></p>
+            <p><strong>DATA:</strong> <?php echo date('d/m/Y H:i', strtotime($pedido['data_cadastro'])); ?></p>
+            
+            <?php if (!empty(trim($pedido['observacao']))): ?>
+                <div class="obs-box">
+                    <strong>OBS:</strong> <?php echo htmlspecialchars(substr($pedido['observacao'], 0, 50)); ?>
+                </div>
+            <?php endif; ?>
         </div>
-        <div class="label-body">
-            <div class="label-details">
-                <p class="large-id">PEDIDO-<?php echo $pedido['id']; ?></p>
-                <p><strong>CLI:</strong> <?php echo htmlspecialchars($pedido['cliente']); ?></p>
-                <p><strong>MAT:</strong> <?php echo htmlspecialchars($display_material); ?></p>
-                <p><strong>QTD:</strong> <?php echo $formatted_qty; ?></p>
-                <p><strong>DAT:</strong> <?php echo date('d/m/y H:i', strtotime($pedido['data_cadastro'])); ?></p>
-                <?php if (!empty(trim($pedido['observacao']))): ?>
-                    <p style="font-size: 8pt; border-top: 1px dashed #000; padding-top: 1mm; margin-top: 1mm;">
-                        <strong>OBS:</strong> <?php echo htmlspecialchars(substr($pedido['observacao'], 0, 50)) . (strlen($pedido['observacao']) > 50 ? '...' : ''); ?>
-                    </p>
-                <?php endif; ?>
-            </div>
-            <div class="label-qr">
-                <img src="<?php echo obterCaminhoQRCode($pedido['codigo_qr']); ?>" alt="QR Code PEDIDO-<?php echo $pedido['id']; ?>">
-            </div>
+        
+        <div class="qr-section">
+            <img src="<?php echo $qr_path; ?>" alt="QR Code">
+            <div style="font-size: 8pt; font-weight: bold; margin-top: 3px;">PEDIDO-<?php echo $pedido['id']; ?></div>
         </div>
     </div>
+
+    <script>
+        // Disparar automaticamente
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 600);
+        };
+    </script>
 </body>
 </html>

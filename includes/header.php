@@ -14,7 +14,7 @@ if (!in_array(basename($_SERVER['PHP_SELF']), $public_pages)) {
 
 // Garantir que o diretório de QR codes existe
 if (!file_exists(QR_CODE_DIR)) {
-    mkdir(QR_CODE_DIR, 0777, true);
+    mkdir(QR_CODE_DIR, 0755, true);
 }
 
 // Determinar o caminho base (raiz do projeto)
@@ -89,7 +89,7 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/pages/') !== false) ? '../' : '';
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle text-white fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle"></i> <?php echo $_SESSION['username'] ?? 'Usuário'; ?> 
+                            <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['username'] ?? 'Usuário'); ?> 
                             <span class="badge bg-light text-primary ms-1"><?php echo SessionManager::getRole(); ?></span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
@@ -125,7 +125,7 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/pages/') !== false) ? '../' : '';
                         <div class="d-flex">
                             <div class="toast-body">
                                 <i class="bi bi-check-circle-fill me-2"></i>
-                                <?php echo $flash['message']; ?>
+                                <?php echo htmlspecialchars($flash['message']); ?>
                             </div>
                             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                         </div>
@@ -135,7 +135,7 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/pages/') !== false) ? '../' : '';
                 <!-- Alert for errors/warnings -->
                 <div class="alert alert-<?php echo $flash['type']; ?> alert-dismissible fade show" role="alert">
                     <i class="bi <?php echo ($flash['type'] === 'danger' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill'); ?> me-2"></i>
-                    <?php echo $flash['message']; ?>
+                    <?php echo htmlspecialchars($flash['message']); ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             <?php endif; ?>

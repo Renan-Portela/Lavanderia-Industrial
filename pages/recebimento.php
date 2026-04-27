@@ -75,9 +75,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $sql_buscar = "SELECT p.*, m.nome as material_nome, m.sku as material_sku 
                           FROM pedidos p 
                           LEFT JOIN materiais m ON p.material_id = m.id 
-                          WHERE p.id = $pedido_id";
-            $result = $conn->query($sql_buscar);
+                          WHERE p.id = ?";
+            $stmt_buscar = $conn->prepare($sql_buscar);
+            $stmt_buscar->bind_param("i", $pedido_id);
+            $stmt_buscar->execute();
+            $result = $stmt_buscar->get_result();
             $pedido_criado = $result->fetch_assoc();
+            $stmt_buscar->close();
             
             setFlash('success', 'Pedido #' . $pedido_id . ' cadastrado com sucesso!');
             
@@ -129,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <th>Categoria:</th>
                                 <td>
                                     <strong><?php echo htmlspecialchars($pedido_criado['material_nome']); ?></strong>
-                                    <small class="text-muted">(SKU: <?php echo $pedido_criado['material_sku']; ?>)</small>
+                                    <small class="text-muted">(SKU: <?php echo htmlspecialchars($pedido_criado['material_sku']); ?>)</small>
                                 </td>
                             </tr>
                             <tr>
@@ -177,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                value="<?php echo isset($_POST['material_search']) && !$pedido_criado ? htmlspecialchars($_POST['material_search']) : ''; ?>">
                         <datalist id="materiaisOptions">
                             <?php foreach ($materiais_catalogo as $m): ?>
-                                <option value="<?php echo $m['sku'] . ' - ' . $m['nome']; ?>">
+                                <option value="<?php echo htmlspecialchars($m['sku'] . ' - ' . $m['nome']); ?>">
                             <?php endforeach; ?>
                         </datalist>
                     </div>

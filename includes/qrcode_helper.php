@@ -50,6 +50,7 @@ function gerarQRCode($texto, $nomeArquivo = null) {
 }
 
 function obterCaminhoQRCode($nomeArquivo) {
+    $nomeArquivo = basename($nomeArquivo); // Prevent path traversal
     // Determinar o caminho base baseado na localização da página
     $base_path = (strpos($_SERVER['PHP_SELF'] ?? '', '/pages/') !== false) ? '../' : '';
     return $base_path . 'qrcodes/' . $nomeArquivo;

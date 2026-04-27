@@ -1,4 +1,9 @@
 <?php
+require_once __DIR__ . '/../includes/auth_helper.php';
+require_once __DIR__ . '/../includes/session_helper.php';
+SessionManager::init();
+SessionManager::requireLogin();
+
 // Verificar se é exportação CSV ANTES de incluir o header
 if (isset($_GET['exportar']) && $_GET['exportar'] == 'csv') {
     // Inicializar conexão para exportação
@@ -211,7 +216,7 @@ if ($volume_mes_anterior > 0) {
                 <form method="GET" action="" class="row g-3 align-items-end">
                     <div class="col-md-3">
                         <label for="mes" class="form-label">Mês Referência</label>
-                        <input type="month" class="form-control" id="mes" name="mes" value="<?php echo $filtro_mes; ?>">
+                        <input type="month" class="form-control" id="mes" name="mes" value="<?php echo htmlspecialchars($filtro_mes); ?>">
                     </div>
                     <div class="col-md-3">
                         <label for="status" class="form-label">Status</label>
@@ -226,7 +231,7 @@ if ($volume_mes_anterior > 0) {
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="bi bi-search"></i> Atualizar
                         </button>
-                        <a href="?status=<?php echo $filtro_status; ?>&mes=<?php echo $filtro_mes; ?>&exportar=csv" class="btn btn-success me-2">
+                        <a href="?status=<?php echo htmlspecialchars($filtro_status); ?>&mes=<?php echo htmlspecialchars($filtro_mes); ?>&exportar=csv" class="btn btn-success me-2">
                             <i class="bi bi-download"></i> CSV
                         </a>
                         <a href="relatorios.php" class="btn btn-outline-secondary">Limpar</a>
@@ -271,7 +276,7 @@ if ($volume_mes_anterior > 0) {
                                 
                                 $is_active = ($pedido_selecionado && $pedido_selecionado['id'] == $p['id']) ? 'table-active border-primary border-start border-4' : '';
                             ?>
-                            <tr class="clickable-row <?php echo $is_active; ?>" onclick="window.location='?status=<?php echo $filtro_status; ?>&mes=<?php echo $filtro_mes; ?>&id=<?php echo $p['id']; ?>'">
+                            <tr class="clickable-row <?php echo $is_active; ?>" onclick="window.location='?status=<?php echo htmlspecialchars($filtro_status); ?>&mes=<?php echo htmlspecialchars($filtro_mes); ?>&id=<?php echo $p['id']; ?>'">
                                 <td><strong>#<?php echo $p['id']; ?></strong></td>
                                 <td><?php echo htmlspecialchars($p['cliente']); ?></td>
                                 <td><?php echo htmlspecialchars($display_cat); ?></td>
@@ -355,7 +360,7 @@ if ($volume_mes_anterior > 0) {
                             <th class="text-muted">Quantidade:</th>
                             <td>
                                 <span class="badge bg-primary fs-6">
-                                    <?php echo number_format($pedido_selecionado['quantidade'], 2, ',', '.') . ' ' . strtolower($pedido_selecionado['unidade']); ?>
+                                    <?php echo number_format($pedido_selecionado['quantidade'], 2, ',', '.') . ' ' . htmlspecialchars(strtolower($pedido_selecionado['unidade'])); ?>
                                 </span>
                             </td>
                         </tr>
@@ -372,7 +377,7 @@ if ($volume_mes_anterior > 0) {
                 <?php endif; ?>
                 
                 <div class="mt-4 text-center">
-                     <a href="?status=<?php echo $filtro_status; ?>&mes=<?php echo $filtro_mes; ?>" class="btn btn-outline-secondary">Fechar Detalhes</a>
+                     <a href="?status=<?php echo htmlspecialchars($filtro_status); ?>&mes=<?php echo htmlspecialchars($filtro_mes); ?>" class="btn btn-outline-secondary">Fechar Detalhes</a>
                 </div>
             </div>
         </div>

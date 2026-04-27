@@ -6,7 +6,7 @@ function conectarDB() {
     $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     
     if ($conn->connect_error) {
-        die("Erro na conexão: " . $conn->connect_error);
+        die("Erro na conexão com o banco de dados.");
     }
     
     $conn->set_charset("utf8mb4");
@@ -19,7 +19,7 @@ function executarQuery($sql, $params = [], $types = "") {
     $stmt = $conn->prepare($sql);
     
     if (!$stmt) {
-        die("Erro na preparação da query: " . $conn->error);
+        die("Erro na preparação da query.");
     }
     
     if (!empty($params)) {
@@ -43,7 +43,7 @@ function inicializarDB() {
     $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
     
     if ($conn->connect_error) {
-        die("Erro na conexão: " . $conn->connect_error);
+        die("Erro na conexão com o banco de dados.");
     }
     
     // Criar banco de dados se não existir

@@ -117,7 +117,7 @@ $activeTab = $_GET['tab'] ?? 'aguardando';
                         <th class="text-muted">QTD:</th>
                         <td>
                             <span class="badge bg-primary fs-6">
-                                <?php echo number_format($pedido['quantidade'], 2, ',', '.') . ' ' . strtolower($pedido['unidade'] ?? 'un'); ?>
+                                <?php echo number_format($pedido['quantidade'], 2, ',', '.') . ' ' . htmlspecialchars(strtolower($pedido['unidade'] ?? 'un')); ?>
                             </span>
                         </td>
                     </tr>
