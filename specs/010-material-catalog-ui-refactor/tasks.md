@@ -18,12 +18,12 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 [P] Backup current `pages/materiais.php` for safe refactoring
+- [x] T001 [P] Backup current `pages/materiais.php` for safe refactoring
 
 ## Phase 2: Foundational
 
-- [ ] T002 Ensure `MaterialService` is fully utilized for state management in `pages/materiais.php`
-- [ ] T003 [P] Verify `copyToClipboard` JS helper availability in `assets/js/main.js`
+- [x] T002 Ensure `MaterialService` is fully utilized for state management in `pages/materiais.php`
+- [x] T003 [P] Verify `copyToClipboard` JS helper availability in `assets/js/main.js`
 
 ## Phase 3: User Story 1 - Searchable Material Lookup (Priority: P1)
 
@@ -35,9 +35,9 @@ Type SKU or Name in search; verify suggestions appear and selection loads the ma
 
 ### Implementation
 
-- [ ] T004 [US1] Implement HTML5 `<datalist>` in `pages/materiais.php` populated with materials (SKU + Name)
-- [ ] T005 [US1] Create the searchable input field in `pages/materiais.php` using the datalist
-- [ ] T006 [US1] Add PHP logic in `pages/materiais.php` to fetch material details based on the search input or a `GET['id']` parameter
+- [x] T004 [US1] Implement HTML5 `<datalist>` in `pages/materiais.php` populated with materials (SKU + Name)
+- [x] T005 [US1] Create the searchable input field in `pages/materiais.php` using the datalist
+- [x] T006 [US1] Add PHP logic in `pages/materiais.php` to fetch material details based on the search input or a `GET['id']` parameter
 
 **Checkpoint**: Searchable lookup functional.
 
@@ -51,11 +51,11 @@ Select material; verify side-by-side card appears. Click "Editar"; verify radio 
 
 ### Implementation
 
-- [ ] T007 [US2] Create the side-by-side UI layout (`col-md-6`) for search/add and detail card in `pages/materiais.php`
-- [ ] T008 [US2] Implement the Detailed Info Card in `pages/materiais.php` with "View Mode" showing all attributes
-- [ ] T009 [US2] Add the "Copiar SKU" button with `copyToClipboard` trigger in `pages/materiais.php`
-- [ ] T010 [US2] Implement the "Edit Mode" toggle and form within the detail card in `pages/materiais.php`
-- [ ] T011 [US2] Use Bootstrap 5 Radio Button groups for "Tipo de Lavagem" (Água/Seco) in both create and edit forms
+- [x] T007 [US2] Create the side-by-side UI layout (`col-md-6`) for search/add and detail card in `pages/materiais.php`
+- [x] T008 [US2] Implement the Detailed Info Card in `pages/materiais.php` with "View Mode" showing all attributes
+- [x] T009 [US2] Add the "Copiar SKU" button with `copyToClipboard` trigger in `pages/materiais.php`
+- [x] T010 [US2] Implement the "Edit Mode" toggle and form within the detail card in `pages/materiais.php`
+- [x] T011 [US2] Use Bootstrap 5 Radio Button groups for "Tipo de Lavagem" (Água/Seco) in both create and edit forms
 
 **Checkpoint**: Detail card and local editing verified.
 
@@ -69,12 +69,12 @@ Click an item in the inventory table; verify the page reloads (or updates) showi
 
 ### Implementation
 
-- [ ] T012 [US3] Wrap Material Name or SKU in the inventory table with links to `materiais.php?id=X`
-- [ ] T013 [US3] Implement the "Add New Material" button to toggle visibility of the creation form, hiding it by default
+- [x] T012 [US3] Wrap Material Name or SKU in the inventory table with links to `materiais.php?id=X`
+- [x] T013 [US3] Implement the "Add New Material" button to toggle visibility of the creation form, hiding it by default
 
 **Checkpoint**: Table interactivity and on-demand creation form functional.
 
 ## Phase 6: Polish & Cross-cutting Concerns
 
-- [ ] T014 [P] Verify responsiveness of the refactored layout on mobile/tablet devices
-- [ ] T015 [P] Run full functional test suite to ensure no regressions in Material CRUD operations
+- [x] T014 [P] Verify responsiveness of the refactored layout on mobile/tablet devices
+- [x] T015 [P] Run full functional test suite to ensure no regressions in Material CRUD operations
