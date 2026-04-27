@@ -7,6 +7,17 @@ require_once __DIR__ . '/../includes/session_helper.php';
 
 $pedido = null;
 
+// Processar visualização por ID (via clique na tabela)
+if (isset($_GET['id'])) {
+    $id_ver = intval($_GET['id']);
+    $pedido = OrderService::getById($id_ver);
+    if ($pedido) {
+        $material = MaterialService::getById($pedido['material_id']);
+        $pedido['material_sku'] = $material['sku'] ?? 'N/A';
+        $pedido['material_nome'] = $material['nome'] ?? 'N/A';
+    }
+}
+
 // Processar leitura do QR Code
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $codigo_qr = trim($_POST['codigo_qr'] ?? '');
@@ -76,8 +87,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <?php if ($pedido): ?>
     <div class="col-md-6 mb-4 fade-in">
         <div class="card shadow-sm border-warning h-100">
-            <div class="card-header bg-warning text-dark">
-                <i class="bi bi-info-circle"></i> Informações do Pedido Escaneado
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-info-circle"></i> Informações do Pedido</span>
+                <button class="btn btn-sm btn-light border-dark" onclick="copiarCodigo('PEDIDO-<?php echo $pedido['id']; ?>')">
+                    <i class="bi bi-clipboard"></i> Copiar
+                </button>
             </div>
             <div class="card-body">
                 <table class="table table-borderless mb-0">
@@ -154,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         if ($unit_display === 'un') $unit_display = 'und.';
                         
                         echo '<tr>';
-                        echo '<td><strong>#' . $row['id'] . '</strong></td>';
+                        echo '<td><a href="lavagem.php?id=' . $row['id'] . '" class="fw-bold text-decoration-none">#' . $row['id'] . '</a></td>';
                         echo '<td>' . htmlspecialchars($row['cliente']) . '</td>';
                         echo '<td><code>' . htmlspecialchars($row['material_sku']) . '</code></td>';
                         echo '<td>' . htmlspecialchars($display_material) . '</td>';
