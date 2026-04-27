@@ -19,9 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $unidade = $_POST['unidade'] ?? 'UN';
     $observacao = trim($_POST['observacao'] ?? '');
     
-    // Tentar encontrar o material_id a partir do input de busca (Formato: "SKU - Nome")
+    // Tentar encontrar o material_id a partir do input de busca
     $material_id = 0;
-    if (preg_match('/^([A-Z0-9]+)\s-\s/', $material_search, $matches)) {
+    
+    // 1. Tentar formato do datalist: "SKU - Nome"
+    if (preg_match('/^(.+?)\s-\s/', $material_search, $matches)) {
         $sku_search = $matches[1];
         foreach ($materiais_catalogo as $m) {
             if ($m['sku'] === $sku_search) {
@@ -30,14 +32,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
     }
+    
+    // 2. Se não encontrou, buscar por SKU exato ou Nome exato
+    if ($material_id === 0) {
+        foreach ($materiais_catalogo as $m) {
+            if (strcasecmp($m['sku'], $material_search) === 0 || strcasecmp($m['nome'], $material_search) === 0) {
+                $material_id = $m['id'];
+                // Atualizar o search para o formato padrão para consistência visual
+                $material_search = $m['sku'] . ' - ' . $m['nome'];
+                break;
+            }
+        }
+    }
 
     if (empty($cliente) || $material_id === 0 || $quantidade <= 0) {
-        setFlash('danger', 'Por favor, preencha todos os campos obrigatórios corretamente. Verifique se selecionou uma categoria válida.');
+        $error_msg = 'Por favor, preencha todos os campos obrigatórios corretamente.';
+        if ($material_id === 0 && !empty($material_search)) {
+            $error_msg .= ' A categoria "' . htmlspecialchars($material_search) . '" não foi encontrada no catálogo.';
+        }
+        setFlash('danger', $error_msg);
     } else {
         // Inserir pedido
         $sql = "INSERT INTO pedidos (cliente, material_id, tipo_material, quantidade, unidade, observacao, status) VALUES (?, ?, '', ?, ?, ?, 'Recebido')";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sids s", $cliente, $material_id, $quantidade, $unidade, $observacao);
+        $stmt->bind_param("sidss", $cliente, $material_id, $quantidade, $unidade, $observacao);
         
         if ($stmt->execute()) {
             $pedido_id = $conn->insert_id;
@@ -62,6 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $pedido_criado = $result->fetch_assoc();
             
             setFlash('success', 'Pedido #' . $pedido_id . ' cadastrado com sucesso!');
+            
+            // Limpar campos para novo cadastro se desejar, ou manter preenchido
+            // Aqui optamos por limpar apenas se o usuário clicar em "Cadastrar Outro" no card de sucesso
         } else {
             setFlash('danger', 'Erro ao cadastrar pedido: ' . $conn->error);
         }
@@ -146,13 +167,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="mb-3">
                         <label for="cliente" class="form-label">Cliente <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="cliente" name="cliente" required 
-                               placeholder="Nome da empresa" value="<?php echo isset($_POST['cliente']) ? htmlspecialchars($_POST['cliente']) : ''; ?>">
+                               placeholder="Nome da empresa" value="<?php echo isset($_POST['cliente']) && !$pedido_criado ? htmlspecialchars($_POST['cliente']) : ''; ?>">
                     </div>
                     
                     <div class="mb-3">
                         <label for="material_search" class="form-label">Categoria (Pesquise por SKU ou Nome) <span class="text-danger">*</span></label>
                         <input list="materiaisOptions" class="form-control" id="material_search" name="material_search" 
-                               placeholder="Digite para filtrar..." required autocomplete="off">
+                               placeholder="Digite para filtrar..." required autocomplete="off"
+                               value="<?php echo isset($_POST['material_search']) && !$pedido_criado ? htmlspecialchars($_POST['material_search']) : ''; ?>">
                         <datalist id="materiaisOptions">
                             <?php foreach ($materiais_catalogo as $m): ?>
                                 <option value="<?php echo $m['sku'] . ' - ' . $m['nome']; ?>">
@@ -164,22 +186,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Unidade de Medida <span class="text-danger">*</span></label>
                             <div class="unit-selection-group">
-                                <input type="radio" class="btn-check" name="unidade" id="unit_un" value="UN" checked>
+                                <input type="radio" class="btn-check" name="unidade" id="unit_un" value="UN" <?php echo (!isset($_POST['unidade']) || $_POST['unidade'] == 'UN') ? 'checked' : ''; ?>>
                                 <label class="btn btn-outline-primary" for="unit_un">UN / Pares</label>
 
-                                <input type="radio" class="btn-check" name="unidade" id="unit_kg" value="KG">
+                                <input type="radio" class="btn-check" name="unidade" id="unit_kg" value="KG" <?php echo (isset($_POST['unidade']) && $_POST['unidade'] == 'KG') ? 'checked' : ''; ?>>
                                 <label class="btn btn-outline-primary" for="unit_kg">Quilos (KG)</label>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="quantidade" class="form-label">Quantidade <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="quantidade" name="quantidade" step="0.01" min="0.01" required>
+                            <input type="number" class="form-control" id="quantidade" name="quantidade" step="0.01" min="0.01" required
+                                   value="<?php echo isset($_POST['quantidade']) && !$pedido_criado ? htmlspecialchars($_POST['quantidade']) : ''; ?>">
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label for="observacao" class="form-label">Observações</label>
-                        <textarea class="form-control" id="observacao" name="observacao" rows="3" placeholder="Detalhes adicionais (opcional)"></textarea>
+                        <textarea class="form-control" id="observacao" name="observacao" rows="3" placeholder="Detalhes adicionais (opcional)"><?php echo isset($_POST['observacao']) && !$pedido_criado ? htmlspecialchars($_POST['observacao']) : ''; ?></textarea>
                     </div>
 
                     <div class="d-grid">
@@ -195,9 +218,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <script>
 function copiarCodigo(texto) {
-    navigator.clipboard.writeText(texto).then(() => {
-        alert('Código ' + texto + ' copiado para o clipboard!');
-    });
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(texto).then(() => {
+            alert('Código ' + texto + ' copiado!');
+        });
+    }
 }
 </script>
 
