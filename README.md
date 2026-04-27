@@ -1,174 +1,56 @@
-# Sistema de Automação - LuvaSul Lavanderia Industrial
+# LuvaSul - Sistema de Gestão de Lavanderia Industrial
 
-Sistema web completo em PHP + MySQL para digitalizar o processo de recebimento, triagem, lavagem e expedição de materiais, substituindo registros manuais em papel por controle digital com QR Code para rastreabilidade.
+Sistema web desenvolvido em PHP puro (No-Framework) para digitalização completa dos processos de uma lavanderia industrial. O foco central é a **Rastreabilidade Digital** e a **Integridade do Processo**, garantindo que cada item seja acompanhado desde o recebimento até a expedição final.
 
-## 🚀 Características
+## 📜 Princípios Fundamentais (Constituição)
 
-- ✅ Dashboard com contadores em tempo real
-- ✅ Recebimento de pedidos com geração automática de QR Code
-- ✅ Controle de lavagem com leitura de QR Code
-- ✅ Expedição com comprovante de entrega
-- ✅ Relatórios completos com filtros e exportação CSV
-- ✅ Interface moderna e responsiva com Bootstrap 5
-- ✅ Rastreabilidade completa dos pedidos
+1.  **Rastreabilidade Digital (QR Code First)**: Todo material gera um QR Code único. O registro manual é proibido nas etapas críticas.
+2.  **Integridade do Processo**: Fluxo obrigatório: Recebimento → Lavagem → Expedição. O sistema impede saltos de etapa.
+3.  **Simplicidade Estruturada**: Código em PHP estruturado e Bootstrap 5, sem dependência de frameworks pesados para garantir manutenção a longo prazo.
+4.  **Fidelidade de Dados**: Dashboards em tempo real e relatórios gerenciais focados em KPIs (Lead Time, Volume, Backlog).
+5.  **Design Operacional Responsivo**: Interface otimizada para tablets e dispositivos móveis no chão de fábrica.
 
-## 📋 Requisitos
+## 🚀 Funcionalidades Principais
 
-- PHP 7.4 ou superior
-- MySQL 5.7 ou superior (ou MariaDB)
-- Servidor web (Apache/Nginx) ou servidor PHP embutido
-- Extensão MySQLi habilitada no PHP
-- Extensão GD habilitada no PHP (para processamento de imagens)
+-   **Dashboard Gerencial**: Visualização de contadores dinâmicos, métricas de OKR (comparativo mensal) e progresso visual dos pedidos.
+-   **Recebimento Aprimorado**: Busca inteligente de categorias por SKU ou Nome, suporte a unidades flexíveis (UN/KG) com precisão decimal e geração instantânea de etiquetas.
+-   **Módulo de Lavagem**: Painel operacional com card de detalhes lateral, validação de QR Code e visualização do significado do SKU do catálogo.
+-   **Módulo de Expedição**: Painel em abas (Aguardando vs. Pronto para Entrega) para gestão de fluxo de saída.
+-   **Catálogo de Materiais**: Gestão completa de SKUs com busca avançada, edição local e definição de tipo de lavagem (Água/Seco).
+-   **Relatórios e Exportação**: Relatórios filtráveis com exportação segura para CSV e drill-down de detalhes sem troca de página.
+-   **Impressão de Etiquetas**: Layout otimizado (100x50mm) para impressoras térmicas industriais.
 
-## 🔧 Instalação
+## 📋 Requisitos e Instalação
 
-### 1. Configurar Banco de Dados
+### Requisitos
+- PHP 7.4+
+- MySQL 5.7+ / MariaDB
+- Extensões PHP: `mysqli`, `gd`
+- Composer (opcional para geração local de QR Code)
 
-Edite o arquivo `config/config.php` e ajuste as credenciais do banco de dados:
+### Instalação e Configuração
+1.  Clone o repositório.
+2.  Configure as variáveis de ambiente para o banco de dados (Recomendado):
+    - `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`
+    - Fallback: Edite as credenciais em `config/config.php` (apenas para ambiente de desenvolvimento).
+3.  O sistema inicializa o banco de dados automaticamente na primeira execução através da função `inicializarDB()`.
+4.  Garanta que o diretório `qrcodes/` tenha permissão de escrita (`chmod 755`).
 
-```php
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'luvasul_db');
-```
+## 📁 Estrutura do Projeto
 
-### 2. Criar Banco de Dados
-
-O sistema criará automaticamente o banco de dados e a tabela na primeira execução. Alternativamente, você pode executar o script SQL manualmente:
-
-```bash
-mysql -u root -p < database.sql
-```
-
-### 3. Permissões de Diretório
-
-Certifique-se de que o diretório `qrcodes/` tenha permissão de escrita:
-
-```bash
-chmod 777 qrcodes/
-```
-
-### 4. Iniciar Servidor
-
-#### Opção 1: Servidor PHP Embutido (Desenvolvimento)
-
-```bash
-php -S localhost:8000
-```
-
-Acesse: `http://localhost:8000`
-
-#### Opção 2: Servidor Web (Produção)
-
-Configure Apache/Nginx para apontar para o diretório do projeto.
-
-## 📱 Uso do Sistema
-
-### 1. Dashboard
-- Visualize contadores de pedidos por status
-- Acesse rapidamente as principais funcionalidades
-- Veja os pedidos mais recentes
-
-### 2. Recebimento
-1. Preencha o formulário com os dados do pedido
-2. Cliente, tipo de material e quantidade são obrigatórios
-3. Ao salvar, um QR Code único é gerado automaticamente
-4. Imprima o QR Code para rastreamento físico
-
-### 3. Lavagem
-1. Leia ou digite o código do QR Code (formato: PEDIDO-123)
-2. O sistema atualiza o status para "Em Lavagem"
-3. Visualize todas as informações do pedido
-
-### 4. Expedição
-1. Leia o QR Code do pedido que está pronto
-2. O sistema atualiza o status para "Pronto para Expedição"
-3. Ao expedir novamente, o pedido é marcado como "Concluído"
-4. Um comprovante é gerado automaticamente
-
-### 5. Relatórios
-1. Filtre pedidos por status
-2. Visualize todos os dados em tabela
-3. Exporte para CSV com um clique
-
-## 🔑 Geração de QR Codes
-
-O sistema utiliza uma API online gratuita (QR Server) para gerar os QR Codes. Não é necessária instalação de bibliotecas adicionais.
-
-Para usar uma biblioteca local (opcional):
-1. Instale via Composer: `composer require endroid/qr-code`
-2. O sistema detectará automaticamente e usará a biblioteca local
-
-## 📁 Estrutura de Arquivos
-
-```
-LuvaSul/
-├── config/
-│   └── config.php          # Configurações do sistema
-├── includes/
-│   ├── header.php          # Cabeçalho e navbar
-│   ├── footer.php          # Rodapé
-│   └── qrcode_helper.php   # Funções para QR Code
-├── pages/
-│   ├── recebimento.php     # Página de recebimento
-│   ├── lavagem.php         # Página de lavagem
-│   ├── expedicao.php       # Página de expedição
-│   └── relatorios.php      # Página de relatórios
-├── assets/
-│   ├── css/
-│   │   └── style.css      # Estilos customizados
-│   └── js/
-│       └── main.js         # Scripts JavaScript
-├── qrcodes/                # Diretório para QR Codes gerados
-├── conexao.php             # Conexão com banco de dados
-├── index.php               # Dashboard principal
-├── database.sql            # Script SQL do banco
-└── README.md               # Este arquivo
-```
-
-## 🎨 Personalização
-
-### Cores e Tema
-Edite o arquivo `assets/css/style.css` para personalizar cores, fontes e layout.
-
-### Configurações
-Ajuste as constantes em `config/config.php` para personalizar o nome do sistema e outras configurações.
+-   `assets/`: Estilos CSS modernos e lógica JavaScript centralizada (Clipboard, Tooltips).
+-   `config/`: Configurações globais e constantes do sistema.
+-   `includes/`: Lógica compartilhada (Autenticação, Serviços de Pedidos/Materiais, Helpers de QR).
+-   `pages/`: Módulos operacionais e administrativos da aplicação.
+-   `specs/`: Documentação técnica completa de cada funcionalidade implementada.
 
 ## 🔒 Segurança
 
-**Importante para Produção:**
-- Altere as credenciais padrão do banco de dados
-- Configure permissões adequadas nos diretórios
-- Use HTTPS em produção
-- Implemente autenticação de usuários se necessário
-- Valide e sanitize todas as entradas do usuário (já implementado parcialmente)
-
-## 🐛 Solução de Problemas
-
-### Erro de Conexão com Banco
-- Verifique as credenciais em `config/config.php`
-- Certifique-se de que o MySQL está rodando
-- Verifique se o usuário tem permissão para criar bancos
-
-### QR Code não aparece
-- Verifique permissões do diretório `qrcodes/`
-- Verifique conexão com internet (para API online)
-- Verifique logs de erro do PHP
-
-### Páginas não carregam corretamente
-- Verifique se está usando o caminho correto do servidor
-- Certifique-se de que todas as extensões PHP necessárias estão habilitadas
-
-## 📝 Licença
-
-Este projeto foi desenvolvido para uso interno da LuvaSul Lavanderia Industrial.
-
-## 👨‍💻 Desenvolvimento
-
-Sistema desenvolvido em PHP estruturado, sem frameworks, seguindo boas práticas de desenvolvimento web.
+O sistema passou por uma auditoria de segurança rigorosa e inclui:
+- Proteção contra SQL Injection (Prepared Statements).
+- Proteção global contra XSS (`htmlspecialchars`).
+- Proteção de rotas e exportações (Sessão obrigatória).
+- Sanitização de caminhos de arquivos (Path Traversal prevention).
 
 ---
-
 **Desenvolvido para LuvaSul Lavanderia Industrial** 🏭
-
