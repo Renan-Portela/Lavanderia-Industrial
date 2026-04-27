@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-[specs/011-managerial-reports-refactor/plan.md](specs/011-managerial-reports-refactor/plan.md)
+[specs/012-receiving-label-pdf-fix/plan.md](specs/012-receiving-label-pdf-fix/plan.md)
 <!-- SPECKIT END -->
 
 ## Constitution

@@ -117,16 +117,19 @@ if (SessionManager::isLoggedIn()):
                             case 'Recebido': 
                                 $badge_class = 'bg-secondary'; 
                                 $progress_pct = 33;
+                                $progress_color = 'bg-secondary';
                                 break;
                             case 'Em Lavagem': 
-                                $badge_class = 'bg-warning'; 
+                            case 'Lavagem': 
+                                $badge_class = 'bg-warning text-dark'; 
                                 $progress_pct = 66;
                                 $progress_color = 'bg-warning';
                                 break;
                             case 'Pronto para Expedição': 
-                                $badge_class = 'bg-info'; 
+                            case 'Expedido': 
+                                $badge_class = 'bg-success'; 
                                 $progress_pct = 100;
-                                $progress_color = 'bg-info';
+                                $progress_color = 'bg-success';
                                 break;
                             case 'Concluído': 
                                 $badge_class = 'bg-success'; 
