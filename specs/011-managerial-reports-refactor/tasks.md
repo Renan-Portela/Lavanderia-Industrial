@@ -18,12 +18,12 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 [P] Backup current `pages/relatorios.php` and `index.php` for safe refactoring
+- [x] T001 [P] Backup current `pages/relatorios.php` and `index.php` for safe refactoring
 
 ## Phase 2: Foundational
 
-- [ ] T002 [P] Unify `.mini-stat-card` and header layout CSS in `assets/css/style.css` for both Dashboard and Reports
-- [ ] T003 [P] Standardize status color classes in `assets/css/style.css` (Success for 'Expedido'/'Concluído')
+- [x] T002 [P] Unify `.mini-stat-card` and header layout CSS in `assets/css/style.css` for both Dashboard and Reports
+- [x] T003 [P] Standardize status color classes in `assets/css/style.css` (Success for 'Expedido'/'Concluído')
 
 ## Phase 3: User Story 1 - Unified Managerial Aesthetic (Priority: P1)
 
@@ -35,9 +35,9 @@ Compare header stats and status badges on both pages; verify they use identical 
 
 ### Implementation
 
-- [ ] T004 [US1] Refactor `index.php` header stats to use the standardized `.mini-stat-card` component
-- [ ] T005 [US1] Update `index.php` to use the 'Success' color (green) for 'Expedido' count
-- [ ] T006 [US1] Refactor `pages/relatorios.php` header to use the same mini-stat card structure as the Dashboard
+- [x] T004 [US1] Refactor `index.php` header stats to use the standardized `.mini-stat-card` component
+- [x] T005 [US1] Update `index.php` to use the 'Success' color (green) for 'Expedido' count
+- [x] T006 [US1] Refactor `pages/relatorios.php` header to use the same mini-stat card structure as the Dashboard
 
 **Checkpoint**: Aesthetic parity achieved.
 
@@ -51,10 +51,10 @@ Verify header cards in Reports show Volume Processado, Lead Time Médio, and Bac
 
 ### Implementation
 
-- [ ] T007 [US3] Implement SQL logic in `pages/relatorios.php` to calculate Processed Volume and Backlog
-- [ ] T008 [US3] Implement SQL logic in `pages/relatorios.php` to calculate Lead Time (Average hours for Expedido)
-- [ ] T009 [US3] Implement secondary SQL query in `pages/relatorios.php` for previous month's metrics (OKR comparison)
-- [ ] T010 [US3] Update header cards in `pages/relatorios.php` to display dynamic KPI values and trend percentages
+- [x] T007 [US3] Implement SQL logic in `pages/relatorios.php` to calculate Processed Volume and Backlog
+- [x] T008 [US3] Implement SQL logic in `pages/relatorios.php` to calculate Lead Time (Average hours for Expedido)
+- [x] T009 [US3] Implement secondary SQL query in `pages/relatorios.php` for previous month's metrics (OKR comparison)
+- [x] T010 [US3] Update header cards in `pages/relatorios.php` to display dynamic KPI values and trend percentages
 
 **Checkpoint**: Managerial metrics functional.
 
@@ -68,17 +68,17 @@ Click an ID in the reports table; verify the side-card appears with full details
 
 ### Implementation
 
-- [ ] T011 [US2] Create the side-by-side UI layout (`col-md-6/col-md-6`) in `pages/relatorios.php`
-- [ ] T012 [US2] Implement `GET['id']` logic in `pages/relatorios.php` to fetch and display the Detailed Info Card
-- [ ] T013 [US2] Update reports table to make Order IDs and Clients clickable (Link to `relatorios.php?id=X`)
-- [ ] T014 [US2] Ensure "Copiar" button is available in the detailed card in `pages/relatorios.php`
+- [x] T011 [US2] Create the side-by-side UI layout (`col-md-6/col-md-6`) in `pages/relatorios.php`
+- [x] T012 [US2] Implement `GET['id']` logic in `pages/relatorios.php` to fetch and display the Detailed Info Card
+- [x] T013 [US2] Update reports table to make Order IDs and Clients clickable (Link to `relatorios.php?id=X`)
+- [x] T014 [US2] Ensure "Copiar" button is available in the detailed card in `pages/relatorios.php`
 
 **Checkpoint**: Contextual drill-down verified.
 
 ## Phase 6: Polish & Cross-cutting Concerns
 
-- [ ] T015 [P] Verify responsiveness of the dual-column layout on tablets and mobile devices
-- [ ] T016 [P] Run full functional test suite to ensure no regressions in report filtering or CSV export
+- [x] T015 [P] Verify responsiveness of the dual-column layout on tablets and mobile devices
+- [x] T016 [P] Run full functional test suite to ensure no regressions in report filtering or CSV export
 
 ## Dependencies
 - All implementation tasks depend on foundational CSS (Phase 2).

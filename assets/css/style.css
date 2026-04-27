@@ -583,3 +583,77 @@ body {
 .print-only {
     display: none;
 }
+
+/* Managerial Reports UI Refactor */
+.mini-stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-left: 4px solid var(--primary-color);
+    min-width: 120px;
+    margin-bottom: 0.5rem;
+}
+
+.mini-stat-card i {
+    font-size: 1.5rem;
+}
+
+.mini-stat-card .stat-value {
+    font-weight: bold;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.mini-stat-card .stat-label {
+    font-size: 0.75rem;
+    color: var(--secondary-color);
+    text-transform: uppercase;
+    display: block;
+}
+
+.mini-stat-card .stat-trend {
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-top: 0.2rem;
+}
+
+.header-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.clickable-row:hover {
+    background-color: rgba(13, 110, 253, 0.05) !important;
+}
+
+/* Ensure colors are standardized */
+.border-success { border-left-color: var(--success-color) !important; }
+.text-success { color: var(--success-color) !important; }
+.bg-success { background-color: var(--success-color) !important; }
+
+.border-warning { border-left-color: var(--warning-color) !important; }
+.text-warning { color: var(--warning-color) !important; }
+.bg-warning { background-color: var(--warning-color) !important; }
+
+.border-secondary { border-left-color: var(--secondary-color) !important; }
+.text-secondary { color: var(--secondary-color) !important; }
+.bg-secondary { background-color: var(--secondary-color) !important; }
+
+.border-primary { border-left-color: var(--primary-color) !important; }
+.text-primary { color: var(--primary-color) !important; }
+.bg-primary { background-color: var(--primary-color) !important; }
+
+.border-info { border-left-color: var(--info-color) !important; }
+.text-info { color: var(--info-color) !important; }
+.bg-info { background-color: var(--info-color) !important; }
