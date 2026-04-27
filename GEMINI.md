@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-[specs/007-enhanced-order-receiving/plan.md](specs/007-enhanced-order-receiving/plan.md)
+[specs/008-washing-ui-refactor/plan.md](specs/008-washing-ui-refactor/plan.md)
 <!-- SPECKIT END -->
 
 ## Constitution
